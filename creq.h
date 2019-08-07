@@ -79,11 +79,11 @@ typedef struct creq_Config
         struct {
             int line_ending;
 
-        } RequestConfig;
+        } request_config;
         struct {
             int line_ending;
 
-        } ResponseConfig;
+        } response_config;
     } data;
     enum { REQUEST, RESPONSE } config_type;
 } creq_Config_t;
@@ -115,7 +115,7 @@ typedef struct creq_Request
     struct {
         creq_HeaderField_t *first_header;
         int len;
-    } HeaderFields; //TODO: better algorithm
+    } header_fields; //TODO: better algorithm
     // line ending after each header
     // line ending again in the end
 
