@@ -5,13 +5,13 @@
 extern "C" {
 #endif // __cplusplus
 
+// BEGINNING OF COPIED CODE these code is copied from cJSON by DaveGamble.
 #if !defined(__WINDOWS__) && (defined(WIN32) || defined(WIN64) || defined(_MSC_VER) || defined(_WIN32))
 #define __WINDOWS__
 #endif
 
 #ifdef __WINDOWS__
 
-// BEGINNING OF COPIED CODE these code is copied from cJSON by DaveGamble.
 /* When compiling for windows, we specify a specific calling convention to avoid issues where we are being called from a project with a different default calling convention.  For windows you have 3 define options:
 CREQ_HIDE_SYMBOLS - Define this in the case where you don't want to ever dllexport symbols
 CREQ_EXPORT_SYMBOLS - Define this on library build when you want to dllexport symbols (default)
