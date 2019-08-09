@@ -1,3 +1,10 @@
+/**
+ * @file creq.h
+ * @brief Main header for creq project
+ * @author CSharperMantle
+ */
+
+
 #ifndef CREQ_H_INCLUDED
 #define CREQ_H_INCLUDED
 
@@ -52,7 +59,7 @@ then using the CREQ_API_VISIBILITY flag to "export" the same symbols the way CRE
 #endif
 // END OF COPIED CODE
 
-#include <stdio.h>
+#define CREQ_STATUS_CODE int
 
 enum
 {
@@ -71,8 +78,21 @@ enum
     CONNECT,
     OPTIONS,
     TRACE
-} creq_HttpMethod_e; //TODO/**<  */
+} creq_HttpMethod_e;
 
+/**
+ * @brief A self-defined node used in bidirectional linked list
+ */
+typedef struct creq_LinkedListNode
+{
+    struct creq_LinkedListNode *prev;
+    void *data;
+    struct creq_LinkedListNode *next;
+} creq_LinkedListNode_t;
+
+/**
+ * @brief Configuration used in both request and response.
+ */
 typedef struct creq_Config
 {
     union {
@@ -85,17 +105,23 @@ typedef struct creq_Config
 
         } response_config;
     } data;
-    enum { REQUEST, RESPONSE } config_type;
+    int config_type;
+    enum { REQUEST, RESPONSE } ConfigType_e;
 } creq_Config_t;
 
-
-
+/**
+ * @brief Represents a single header-value pair used in request and response.
+ */
 typedef struct creq_HeaderField
 {
     char *field_name;
     char *field_value;
 } creq_HeaderField_t;
 
+/**
+ * @brief Inner request struct for response generating.
+ * @see RFC7230 Section 3
+ */
 // As defined in RFC7230 Section 3
 typedef struct creq_Request
 {
@@ -112,16 +138,17 @@ typedef struct creq_Request
     // line ending
 
     // > header field
-    struct {
-        creq_HeaderField_t *first_header;
-        int len;
-    } header_fields; //TODO: better algorithm
+    creq_LinkedListNode_t *first_header; //TODO: better algorithm
     // line ending after each header
     // line ending again in the end
 
     char *message_body;
 } creq_Request_t;
 
+/**
+ * @brief Inner response struct for response generating.
+ * @see RFC7230 Section 3
+ */
 typedef struct creq_Response
 {
     creq_Config_t config;
@@ -136,16 +163,46 @@ typedef struct creq_Response
     // line ending
 
     // > header field
-    struct {
-        creq_HeaderField_t *first_header;
-        int len;
-    } HeaderFields; //TODO: better algorithm
+    creq_LinkedListNode_t *first_header; //TODO: better algorithm
     // line ending after each header
     // line ending again in the end
 
     char *message_body;
 } creq_Response_t;
 
+/**
+ * @brief Creates a new creq_Request object.
+ *  @see creq_Request
+ * @return A pointer to the newly created creq_Request object.
+ *  @retval NULL Fails to create a new object.
+ * @attention Always use creq_free_request when done.
+ *  @see creq_free_request
+ */
+CREQ_PUBLIC(creq_Request_t *) creq_Request_create();
+
+/**
+ * @brief Frees a formerly created creq_Request object.
+ *  @see creq_Request
+ *  @see creq_create_request
+ * @return Indicates if the procedure is finished properly.
+ *  @retval 0 Procedure finishes successfully.
+ *  @retval 1 Procedure fails.
+ * @attention This procedure frees all the resources used in the given object, including all the items in the headers list.
+ * @attention So make sure they are malloc'ed!
+ * @attention However, strings (eg. request_target, message_body) will be directly set to NULL, so free them by yourself when needed.
+ */
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_free(creq_Request_t *req);
+
+/**
+ * @brief Adds a new item to the tail of creq_Request::first_header.
+ * @param req The creq_Request object to write to.
+ * @param header The header which will be joined.
+ * @param value The value which pairs to the header.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval 0 Procedure finishes successfully.
+ *  @retval 1 Procedure fails.
+ */
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_add_header(creq_Request_t *req, const char *header, const char *value);
 
 #ifdef __cplusplus
 }
