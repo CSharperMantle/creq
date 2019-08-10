@@ -49,18 +49,31 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_HeaderLListNode_free(creq_HeaderLListNode_t *
     }
     creq_HeaderField_t *pField = node->data;
 
-    free(pField->field_name);
-    pField->field_name = NULL;
-    free(pField->field_value);
-    pField->field_value = NULL;
+    CREQ_GUARDED_FREE(pField->field_name);
+    CREQ_GUARDED_FREE(pField->field_value);
 
-    free(pField);
-    pField = NULL;
+    CREQ_GUARDED_FREE(pField);
     node->data = NULL;
     node->next = NULL;
     node->prev = NULL;
     free(node);
     return CREQ_STATUS_CODE_SUCC;
+}
+
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, const char *header)
+{
+    if (header == NULL)
+    {
+        return NULL;
+    }
+    creq_HeaderLListNode_t *pCursor = head;
+    ///@todo Assumes that every node object has a non-NULL data field. Do more checks.
+    ///@bug Maybe a bug here.
+    while (pCursor != NULL && strcmp(pCursor->data->field_name, header))
+    {
+        pCursor = pCursor->next;
+    }
+    return pCursor;
 }
 
 CREQ_PUBLIC(creq_Request_t *) creq_Request_create()
@@ -74,7 +87,7 @@ CREQ_PUBLIC(creq_Request_t *) creq_Request_create()
     pRequest->method = 0;
     pRequest->request_target = NULL;
     pRequest->http_version = 0;
-    pRequest->first_header = NULL;
+    pRequest->list_head = NULL;
     pRequest->message_body = NULL;
 
     return pRequest;
@@ -85,10 +98,10 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_free(creq_Request_t *req)
     if (req != NULL)
     {
         // free pointer members
-        req->request_target = NULL;
-        req->message_body = NULL;
+        CREQ_GUARDED_FREE(req->request_target);
+        CREQ_GUARDED_FREE(req->message_body);
         // free linked list
-        creq_HeaderLListNode_t *pNodeCursor = req->first_header;
+        creq_HeaderLListNode_t *pNodeCursor = req->list_head;
         if (pNodeCursor != NULL)
         {
             while (pNodeCursor->next != NULL) // find the last element
@@ -97,18 +110,7 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_free(creq_Request_t *req)
             }
             while (pNodeCursor != NULL)
             {
-                if (pNodeCursor->prev != NULL)
-                {
-                    pNodeCursor->prev->next = pNodeCursor->next;
-                }
-                else
-                {
-                    req->first_header = pNodeCursor->next;
-                }
-                if (pNodeCursor->next != NULL)
-                {
-                    pNodeCursor->next->prev = pNodeCursor->prev;
-                }
+                creq_Request_delist_header_direct(req, pNodeCursor);
                 creq_HeaderLListNode_t *pPrev = pNodeCursor->prev;
                 creq_HeaderLListNode_free(pNodeCursor);
                 pNodeCursor = pPrev; ///@todo Test required!
@@ -121,19 +123,48 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_free(creq_Request_t *req)
     return CREQ_STATUS_CODE_FAILED;
 }
 
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_http_method(creq_Request_t *req, creq_HttpMethod_t method)
+{
+    if (req == NULL)
+    {
+        return CREQ_STATUS_CODE_FAILED;
+    }
+    req->method = method;
+    return CREQ_STATUS_CODE_SUCC;
+}
+
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_target(creq_Request_t *req, const char *requestTarget)
+{
+    if (req == NULL || requestTarget == NULL)
+    {
+        return CREQ_STATUS_CODE_FAILED;
+    }
+    CREQ_GUARDED_FREE(req->request_target); // has it been set previously? check it first, free it if necessary...
+    // ...and then do what we are supposed to do :D
+    char *pReqTargetCopy = _creq_malloc_strcpy(requestTarget);
+    req->request_target = pReqTargetCopy;
+    return CREQ_STATUS_CODE_SUCC;
+}
+
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_http_version(creq_Request_t *req, int major, int minor)
+{
+    ///@todo To be implemented.
+    return CREQ_STATUS_CODE_FAILED;
+}
+
 CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_add_header(creq_Request_t *req, const char *header, const char *value)
 {
     if (req == NULL || header == NULL || value == NULL) // guarded
         return CREQ_STATUS_CODE_FAILED;
 
     creq_HeaderLListNode_t *pNewNode = creq_HeaderLListNode_create(header, value);
-    if (req->first_header == NULL) // first element?
+    if (req->list_head == NULL) // first element?
     {
-        req->first_header = pNewNode;
+        req->list_head = pNewNode;
         return CREQ_STATUS_CODE_SUCC;
     }
     // not the first element
-    creq_HeaderLListNode_t *pNodeCursor = req->first_header;
+    creq_HeaderLListNode_t *pNodeCursor = req->list_head;
     while (pNodeCursor->next != NULL) // find the last element
     {
         pNodeCursor = pNodeCursor->next;
@@ -142,4 +173,42 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_add_header(creq_Request_t *req, const
     pNewNode->prev = pNodeCursor;
 
     return CREQ_STATUS_CODE_SUCC;
+}
+
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_delist_header_direct(creq_Request_t *req, creq_HeaderLListNode_t *node)
+{
+    if (req == NULL || node == NULL)
+    {
+        return CREQ_STATUS_CODE_FAILED;
+    }
+    if (node->prev != NULL)
+    {
+        node->prev->next = node->next;
+    }
+    else
+    {
+        req->list_head = node->next;
+    }
+    if (node->next != NULL)
+    {
+        node->next->prev = node->prev;
+    }
+    return CREQ_STATUS_CODE_SUCC;
+}
+
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_Request_delist_header(creq_Request_t *req, const char *header)
+{
+    if (req == NULL || header == NULL)
+    {
+        return NULL;
+    }
+    // look for a node
+    creq_HeaderLListNode_t *pNodeToDelete = creq_HeaderLListNode_search_for_header(req->list_head, header);
+    if (pNodeToDelete == NULL)
+    {
+        return NULL;
+    }
+    // node found!
+    creq_Request_delist_header_direct(req, pNodeToDelete);
+    return pNodeToDelete;
 }

@@ -63,14 +63,16 @@ then using the CREQ_API_VISIBILITY flag to "export" the same symbols the way CRE
 #define CREQ_STATUS_CODE_SUCC 0
 #define CREQ_STATUS_CODE_FAILED 1
 
-enum
+#define CREQ_GUARDED_FREE(ptr) if (ptr != NULL) { free(ptr); ptr = NULL; }
+
+typedef enum creq_LineEnding_e
 {
     CR,
     LF,
     CRLF
-} creq_LineEnding_e;
+} creq_LineEnding_t;
 
-enum
+typedef enum creq_HttpMethod_e
 {
     GET,
     HEAD,
@@ -80,7 +82,13 @@ enum
     CONNECT,
     OPTIONS,
     TRACE
-} creq_HttpMethod_e;
+} creq_HttpMethod_t;
+
+typedef enum creq_ConfigType_e
+{
+    REQUEST,
+    RESPONSE
+} creq_ConfigType_t;
 
 /**
  * @brief Represents a single header-value pair used in request and response.
@@ -108,29 +116,27 @@ typedef struct creq_Config
 {
     union {
         struct {
-            int line_ending;
+            creq_LineEnding_t line_ending;
 
         } request_config;
         struct {
-            int line_ending;
+            creq_LineEnding_t line_ending;
 
         } response_config;
     } data;
-    int config_type;
-    enum { REQUEST, RESPONSE } ConfigType_e;
+    creq_ConfigType_t config_type;
 } creq_Config_t;
 
 /**
  * @brief Inner request struct for response generating.
  * @see RFC7230 Section 3
  */
-// As defined in RFC7230 Section 3
 typedef struct creq_Request
 {
     creq_Config_t config;
 
     // > request-line, Section 3.1.1
-    int method;
+    creq_HttpMethod_t method;
     // space
     char *request_target;
     // space
@@ -140,7 +146,7 @@ typedef struct creq_Request
     // line ending
 
     // > header field
-    creq_HeaderLListNode_t *first_header; //TODO: better algorithm
+    creq_HeaderLListNode_t *list_head;
     // line ending after each header
     // line ending again in the end
 
@@ -165,7 +171,7 @@ typedef struct creq_Response
     // line ending
 
     // > header field
-    creq_HeaderLListNode_t *first_header; //TODO: better algorithm
+    creq_HeaderLListNode_t *list_head;
     // line ending after each header
     // line ending again in the end
 
@@ -197,6 +203,14 @@ CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(const char *he
 CREQ_PUBLIC(CREQ_STATUS_CODE) creq_HeaderLListNode_free(creq_HeaderLListNode_t *node);
 
 /**
+ * @brief Search for a header-value pair in the headers list which contains the given header.
+ * @return A pointer to the header found.
+ *  @retval NULL Header not found.
+ * @attention Always return the first one when there are multiple occurrences.
+ */
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, const char *header);
+
+/**
  * @brief Creates a new creq_Request object.
  *  @see creq_Request
  * @return A pointer to the newly created creq_Request object.
@@ -215,9 +229,38 @@ CREQ_PUBLIC(creq_Request_t *) creq_Request_create();
  *  @retval 1 Procedure fails.
  * @attention This procedure frees all the resources used in the given object, including all the items in the headers list.
  * @attention So make sure they are malloc'ed!
- * @attention However, strings (eg. request_target, message_body) will be directly set to NULL, so free them by yourself when needed.
  */
 CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_free(creq_Request_t *req);
+
+/**
+ * @brief Set the creq_Request object's http method.
+ *  @see creq_Request::method
+ *  @see creq_HttpMethod_e
+ * @return Indicates if the procedure is finished properly.
+ *  @retval 0 Procedure finishes successfully.
+ *  @retval 1 Procedure fails.
+ */
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_http_method(creq_Request_t *req, creq_HttpMethod_t method);
+
+/**
+ * @brief Set the creq_Request object's target to the given string.
+ *  @see creq_Request::request_target
+ * @return Indicates if the procedure is finished properly.
+ *  @retval 0 Procedure finishes successfully.
+ *  @retval 1 Procedure fails.
+ * @attention This procedure stores a copy of the given string.
+ */
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_target(creq_Request_t *req, const char *requestTarget);
+
+/**
+ * @brief Set the http version of the creq_Request object.
+ *  @see creq_Request::http_version
+ * @return Indicates if the procedure is finished properly.
+ *  @retval 0 Procedure finishes successfully.
+ *  @retval 1 Procedure fails.
+ * @attention The version is stored as the 'masked value', such as 0101 which means HTTP/1.1.
+ */
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_http_version(creq_Request_t *req, int major, int minor);
 
 /**
  * @brief Adds a new item to the tail of creq_Request::first_header.
@@ -226,6 +269,24 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_free(creq_Request_t *req);
  *  @retval 1 Procedure fails.
  */
 CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_add_header(creq_Request_t *req, const char *header, const char *value);
+
+/**
+ * @brief Moves a header node out of the list.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval 0 Procedure finishes successfully.
+ *  @retval 1 Procedure fails.
+ * @attention This procedure directly operates on the given node pointer.
+ */
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_delist_header_direct(creq_Request_t *req, creq_HeaderLListNode_t *node);
+
+/**
+ * @brief Moves a header from the headers list which has the given header out of the list. Alternative to creq_Request_delist_header_direct.
+ *  @see creq_Request_delist_header_direct
+ * @return A pointer to the removed header for further process.
+ *  @retval NULL Header not found.
+ * @attention Always delete the first header found in the list. To delete multiple header-value pairs, call this procedure iteratively until NULL is returned.
+ */
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_Request_delist_header(creq_Request_t *req, const char *header);
 
 #ifdef __cplusplus
 }
