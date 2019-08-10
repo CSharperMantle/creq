@@ -9,11 +9,58 @@
 #include "creq.h"
 
 
-void *_creq_malloc_n_init(size_t size)
+static void *_creq_malloc_n_init(size_t size)
 {
     void *pNewSpace = malloc(size);
     memset(pNewSpace, 0, size);
     return pNewSpace;
+}
+
+///@attention Don't forget to free the pointer returned!
+static char *_creq_malloc_strcpy(const char *src)
+{
+    size_t fullLen = strlen(src) + 1;
+    char *dest = (char *)malloc(sizeof(char) * fullLen);
+    strcpy(dest, src);
+    return dest;
+}
+
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(const char *header, const char *value)
+{
+    if (header == NULL || value == NULL) // guarded
+    {
+        return NULL;
+    }
+    creq_HeaderLListNode_t *pNode = (creq_HeaderLListNode_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderLListNode));
+
+    creq_HeaderField_t *pField = (creq_HeaderField_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderField));
+    pField->field_name = _creq_malloc_strcpy(header);
+    pField->field_value = _creq_malloc_strcpy(value);
+
+    pNode->data = pField;
+    return pNode;
+}
+
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_HeaderLListNode_free(creq_HeaderLListNode_t *node)
+{
+    if (node == NULL || node->data == NULL || node->data->field_name == NULL || node->data->field_value == NULL)
+    {
+        return CREQ_STATUS_CODE_FAILED;
+    }
+    creq_HeaderField_t *pField = node->data;
+
+    free(pField->field_name);
+    pField->field_name = NULL;
+    free(pField->field_value);
+    pField->field_value = NULL;
+
+    free(pField);
+    pField = NULL;
+    node->data = NULL;
+    node->next = NULL;
+    node->prev = NULL;
+    free(node);
+    return CREQ_STATUS_CODE_SUCC;
 }
 
 CREQ_PUBLIC(creq_Request_t *) creq_Request_create()
@@ -41,7 +88,7 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_free(creq_Request_t *req)
         req->request_target = NULL;
         req->message_body = NULL;
         // free linked list
-        creq_LinkedListNode_t *pNodeCursor = req->first_header;
+        creq_HeaderLListNode_t *pNodeCursor = req->first_header;
         if (pNodeCursor != NULL)
         {
             while (pNodeCursor->next != NULL) // find the last element
@@ -62,38 +109,31 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_free(creq_Request_t *req)
                 {
                     pNodeCursor->next->prev = pNodeCursor->prev;
                 }
-                creq_LinkedListNode_t *pPrev = pNodeCursor->prev;
-                free(pNodeCursor->data);
-                free(pNodeCursor);
+                creq_HeaderLListNode_t *pPrev = pNodeCursor->prev;
+                creq_HeaderLListNode_free(pNodeCursor);
                 pNodeCursor = pPrev; ///@todo Test required!
             }
         }
         // finally
         free(req);
-        return 0;
+        return CREQ_STATUS_CODE_SUCC;
     }
-    return 1;
+    return CREQ_STATUS_CODE_FAILED;
 }
 
 CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_add_header(creq_Request_t *req, const char *header, const char *value)
 {
     if (req == NULL || header == NULL || value == NULL) // guarded
-        return 1;
+        return CREQ_STATUS_CODE_FAILED;
 
-    creq_HeaderField_t *pNewHeader = (creq_HeaderField_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderField));
-    pNewHeader->field_name = header;
-    pNewHeader->field_value = value;
-    ///@todo For some reason, I don't know how strings are proceeded in C. Need to pay more attention to string copying.
-
-    creq_LinkedListNode_t *pNewNode = (creq_LinkedListNode_t *)_creq_malloc_n_init(sizeof(struct creq_LinkedListNode));
-    pNewNode->data = pNewHeader;
+    creq_HeaderLListNode_t *pNewNode = creq_HeaderLListNode_create(header, value);
     if (req->first_header == NULL) // first element?
     {
         req->first_header = pNewNode;
-        return 0;
+        return CREQ_STATUS_CODE_SUCC;
     }
     // not the first element
-    creq_LinkedListNode_t *pNodeCursor = req->first_header;
+    creq_HeaderLListNode_t *pNodeCursor = req->first_header;
     while (pNodeCursor->next != NULL) // find the last element
     {
         pNodeCursor = pNodeCursor->next;
@@ -101,5 +141,5 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_add_header(creq_Request_t *req, const
     pNodeCursor->next = pNewNode;
     pNewNode->prev = pNodeCursor;
 
-    return 0;
+    return CREQ_STATUS_CODE_SUCC;
 }

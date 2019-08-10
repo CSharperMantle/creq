@@ -1,6 +1,6 @@
 /**
  * @file creq.h
- * @brief Main header for creq project
+ * @brief Main header for creq project.
  * @author CSharperMantle
  */
 
@@ -60,6 +60,8 @@ then using the CREQ_API_VISIBILITY flag to "export" the same symbols the way CRE
 // END OF COPIED CODE
 
 #define CREQ_STATUS_CODE int
+#define CREQ_STATUS_CODE_SUCC 0
+#define CREQ_STATUS_CODE_FAILED 1
 
 enum
 {
@@ -81,14 +83,23 @@ enum
 } creq_HttpMethod_e;
 
 /**
+ * @brief Represents a single header-value pair used in request and response.
+ */
+typedef struct creq_HeaderField
+{
+    char *field_name;
+    char *field_value;
+} creq_HeaderField_t;
+
+/**
  * @brief A self-defined node used in bidirectional linked list
  */
-typedef struct creq_LinkedListNode
+typedef struct creq_HeaderLListNode
 {
-    struct creq_LinkedListNode *prev;
-    void *data;
-    struct creq_LinkedListNode *next;
-} creq_LinkedListNode_t;
+    struct creq_HeaderLListNode *prev;
+    creq_HeaderField_t *data;
+    struct creq_HeaderLListNode *next;
+} creq_HeaderLListNode_t;
 
 /**
  * @brief Configuration used in both request and response.
@@ -110,15 +121,6 @@ typedef struct creq_Config
 } creq_Config_t;
 
 /**
- * @brief Represents a single header-value pair used in request and response.
- */
-typedef struct creq_HeaderField
-{
-    char *field_name;
-    char *field_value;
-} creq_HeaderField_t;
-
-/**
  * @brief Inner request struct for response generating.
  * @see RFC7230 Section 3
  */
@@ -138,7 +140,7 @@ typedef struct creq_Request
     // line ending
 
     // > header field
-    creq_LinkedListNode_t *first_header; //TODO: better algorithm
+    creq_HeaderLListNode_t *first_header; //TODO: better algorithm
     // line ending after each header
     // line ending again in the end
 
@@ -163,7 +165,7 @@ typedef struct creq_Response
     // line ending
 
     // > header field
-    creq_LinkedListNode_t *first_header; //TODO: better algorithm
+    creq_HeaderLListNode_t *first_header; //TODO: better algorithm
     // line ending after each header
     // line ending again in the end
 
@@ -171,17 +173,41 @@ typedef struct creq_Response
 } creq_Response_t;
 
 /**
+ * @brief Creates a new header list node which contains a header-value pair.
+ *  @see creq_HeaderLListNode
+ *  @see creq_HeaderField
+ * @return A pointer to the newly created node.
+ *  @retval NULL Fails to create a new object.
+ * @attention DO NOT directly free the node unless it's not inserted into the list.
+ * @attention For internal use only.
+ */
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(const char *header, const char *value);
+
+/**
+ * @brief Frees a previously-created HeaderLListNode.
+ *  @see creq_HeaderLListNode_create
+ * @return Indicates if the procedure is finished properly.
+ *  @retval 0 Procedure finishes successfully.
+ *  @retval 1 Procedure fails.
+ * @attention This procedure only frees the node, the data field, and the strings, set the prev and next pointers to NULL, and delete the object directly.
+ * @attention For internal use only.
+ * @see creq_HeaderLListNode
+ * @see creq_HeaderField
+ */
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_HeaderLListNode_free(creq_HeaderLListNode_t *node);
+
+/**
  * @brief Creates a new creq_Request object.
  *  @see creq_Request
  * @return A pointer to the newly created creq_Request object.
  *  @retval NULL Fails to create a new object.
- * @attention Always use creq_free_request when done.
- *  @see creq_free_request
+ * @attention Always use creq_Request_free when done.
+ *  @see creq_Request_free
  */
 CREQ_PUBLIC(creq_Request_t *) creq_Request_create();
 
 /**
- * @brief Frees a formerly created creq_Request object.
+ * @brief Frees a previously-created creq_Request object.
  *  @see creq_Request
  *  @see creq_create_request
  * @return Indicates if the procedure is finished properly.
@@ -195,9 +221,6 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_free(creq_Request_t *req);
 
 /**
  * @brief Adds a new item to the tail of creq_Request::first_header.
- * @param req The creq_Request object to write to.
- * @param header The header which will be joined.
- * @param value The value which pairs to the header.
  * @return Indicates if the procedure is finished properly.
  *  @retval 0 Procedure finishes successfully.
  *  @retval 1 Procedure fails.
