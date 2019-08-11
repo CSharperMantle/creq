@@ -127,6 +127,12 @@ typedef struct creq_Config
     creq_ConfigType_t config_type;
 } creq_Config_t;
 
+typedef struct creq_HttpVersion
+{
+    unsigned major;
+    unsigned minor;
+} creq_HttpVersion_t;
+
 /**
  * @brief Inner request struct for response generating.
  * @see RFC7230 Section 3
@@ -140,8 +146,7 @@ typedef struct creq_Request
     // space
     char *request_target;
     // space
-    // > mask value, for example (0101)10 for HTTP/1.1
-    int http_version;
+    creq_HttpVersion_t http_version;
     // space
     // line ending
 
@@ -163,7 +168,7 @@ typedef struct creq_Response
 
     // > status-line, Section 3.1.2
     // > mask value, for example (0101)10 for HTTP/1.1
-    int http_version;
+    creq_HttpVersion_t http_version;
     // space
     int status_code;
     // space
@@ -245,6 +250,7 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_http_method(creq_Request_t *req, 
 /**
  * @brief Set the creq_Request object's target to the given string.
  *  @see creq_Request::request_target
+ * @param requestTarget The pointer to the new target. NULL will clear the target.
  * @return Indicates if the procedure is finished properly.
  *  @retval 0 Procedure finishes successfully.
  *  @retval 1 Procedure fails.
@@ -261,6 +267,17 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_target(creq_Request_t *req, const
  * @attention The version is stored as the 'masked value', such as 0101 which means HTTP/1.1.
  */
 CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_http_version(creq_Request_t *req, int major, int minor);
+
+/**
+ * @brief Set the creq_Request object's message body to the given string.
+ *  @see creq_Request::message_body
+ * @param requestTarget The pointer to the new message. NULL will clear the message.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval 0 Procedure finishes successfully.
+ *  @retval 1 Procedure fails.
+ * @attention This procedure stores a copy of the given string.
+ */
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_message_body(creq_Request_t *req, const char *msg);
 
 /**
  * @brief Adds a new item to the tail of creq_Request::first_header.

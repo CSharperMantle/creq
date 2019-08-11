@@ -86,7 +86,8 @@ CREQ_PUBLIC(creq_Request_t *) creq_Request_create()
     pRequest->config = config;
     pRequest->method = 0;
     pRequest->request_target = NULL;
-    pRequest->http_version = 0;
+    pRequest->http_version.major = 0;
+    pRequest->http_version.minor = 0;
     pRequest->list_head = NULL;
     pRequest->message_body = NULL;
 
@@ -135,11 +136,16 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_http_method(creq_Request_t *req, 
 
 CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_target(creq_Request_t *req, const char *requestTarget)
 {
-    if (req == NULL || requestTarget == NULL)
+    if (req == NULL)
     {
         return CREQ_STATUS_CODE_FAILED;
     }
     CREQ_GUARDED_FREE(req->request_target); // has it been set previously? check it first, free it if necessary...
+    if (requestTarget == NULL) // user requests to clear
+    {
+        req->request_target = NULL;
+        return CREQ_STATUS_CODE_SUCC;
+    }
     // ...and then do what we are supposed to do :D
     char *pReqTargetCopy = _creq_malloc_strcpy(requestTarget);
     req->request_target = pReqTargetCopy;
@@ -148,8 +154,26 @@ CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_target(creq_Request_t *req, const
 
 CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_http_version(creq_Request_t *req, int major, int minor)
 {
-    ///@todo To be implemented.
-    return CREQ_STATUS_CODE_FAILED;
+    req->http_version.major = major;
+    req->http_version.minor = minor;
+    return CREQ_STATUS_CODE_SUCC;
+}
+
+CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_set_message_body(creq_Request_t *req, const char *msg)
+{
+    if (req == NULL)
+    {
+        return CREQ_STATUS_CODE_FAILED;
+    }
+    CREQ_GUARDED_FREE(req->message_body);
+    if (msg == NULL)
+    {
+        req->message_body = NULL;
+        return CREQ_STATUS_CODE_SUCC;
+    }
+    char *pMsgCopy = _creq_malloc_strcpy(msg);
+    req->message_body = pMsgCopy;
+    return CREQ_STATUS_CODE_SUCC;
 }
 
 CREQ_PUBLIC(CREQ_STATUS_CODE) creq_Request_add_header(creq_Request_t *req, const char *header, const char *value)
