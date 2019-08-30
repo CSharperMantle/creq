@@ -4,10 +4,17 @@
  * @author CSharperMantle
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "creq.h"
 
+// $(method) /target/path HTTP/1.1 line_ending(\r, \n || \r\n)
+CREQ_PRIVATE(const char *) _creq_FMT_REQUEST_STATUS_LINE = "%s %s %s%s";
+
+// HTTP/$(major).$(minor)
+CREQ_PRIVATE(const char *) _creq_FMT_HTTP_VERSION = "HTTP/%d.%d";
 
 CREQ_PRIVATE(void *) _creq_malloc_n_init(size_t size)
 {
@@ -23,6 +30,67 @@ CREQ_PRIVATE(char *) _creq_malloc_strcpy(const char *src)
     char *dest = (char *)malloc(sizeof(char) * fullLen);
     strcpy(dest, src);
     return dest;
+}
+
+CREQ_PRIVATE(const char *) _creq_get_line_ending_str(creq_Config_t *conf, creq_ConfigType_t confType)
+{
+    if (conf == NULL)
+    {
+        return NULL;
+    }
+    creq_LineEnding_t ending = LE_CRLF;
+    if (confType == CONF_REQUEST)
+    {
+        ending = conf->data.request_config.line_ending;
+    } else if (confType == CONF_RESPONSE)
+    {
+        ending = conf->data.response_config.line_ending;
+    }
+    switch (ending)
+    {
+    case LE_CR:
+        return "\r";
+    case LE_LF:
+        return "\n";
+    case LE_CRLF:
+        // fall through
+    default:
+        return "\r\n";
+    }
+}
+
+CREQ_PRIVATE(const char *) _creq_get_http_method_str(creq_HttpMethod_t meth)
+{
+    switch (meth)
+    {
+    case GET:
+        return "GET";
+    case HEAD:
+        return "HEAD";
+    case POST:
+        return "POST";
+    case PUT:
+        return "PUT";
+    case DELETE:
+        return "DELETE";
+    case CONNECT:
+        return "CONNECT";
+    case OPTIONS:
+        return "OPTIONS";
+    case TRACE:
+        return "TRACE";
+    default:
+        return NULL;
+    }
+}
+
+/// @attention Don't forget to free the returned string! THE STR IS MALLOC'ED!
+CREQ_PRIVATE(char *) _creq_get_http_version_str(int major, int minor)
+{
+    int len = snprintf((char *)NULL, 0U, _creq_FMT_HTTP_VERSION, major, minor);
+    char *str = (char *)_creq_malloc_n_init(sizeof(char) * (len + 1));
+    snprintf(str, len + 1, _creq_FMT_HTTP_VERSION, major, minor);
+    return str;
 }
 
 CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(const char *header, const char *value)
@@ -142,8 +210,8 @@ CREQ_PUBLIC(creq_Request_t *) creq_Request_create()
     creq_Request_t *pRequest = (creq_Request_t *)_creq_malloc_n_init(sizeof(struct creq_Request));
 
     creq_Config_t config;
-    config.config_type = REQUEST;
-    config.data.request_config.line_ending = CRLF;
+    config.config_type = CONF_REQUEST;
+    config.data.request_config.line_ending = LE_CRLF;
     pRequest->config = config;
     pRequest->method = 0;
     pRequest->request_target = NULL;
@@ -288,6 +356,17 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     {
         return NULL;
     }
+    const char *line_ending_s = _creq_get_line_ending_str(&req->config, CONF_REQUEST);
+    const char *http_meth_s = _creq_get_http_method_str(req->method);
+    char *http_version_s = _creq_get_http_version_str(req->http_version.major, req->http_version.minor);
+
+    int status_line_len = snprintf(NULL, 0, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
+    char *status_line_s = (char *)_creq_malloc_n_init(sizeof(char) * (status_line_len + 1));
+    snprintf(status_line_s, status_line_len + 1, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
+    CREQ_GUARDED_FREE(http_version_s);
+
+    // we now have a status_line_s string. Others are garbage now.
+
     /// @todo To be finished.
     return NULL;
 }

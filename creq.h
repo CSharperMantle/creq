@@ -68,9 +68,9 @@ typedef int creq_status_t;
 
 typedef enum creq_LineEnding_e
 {
-    CR,
-    LF,
-    CRLF
+    LE_CR,
+    LE_LF,
+    LE_CRLF
 } creq_LineEnding_t;
 
 typedef enum creq_HttpMethod_e
@@ -88,8 +88,8 @@ typedef enum creq_HttpMethod_e
 
 typedef enum creq_ConfigType_e
 {
-    REQUEST,
-    RESPONSE
+    CONF_REQUEST,
+    CONF_RESPONSE
 } creq_ConfigType_t;
 
 /**
