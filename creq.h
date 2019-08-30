@@ -12,7 +12,6 @@
 extern "C" {
 #endif // __cplusplus
 
-// BEGINNING OF COPIED CODE these code is copied from cJSON by DaveGamble.
 #if !defined(__WINDOWS__) && (defined(WIN32) || defined(WIN64) || defined(_MSC_VER) || defined(_WIN32))
 #define __WINDOWS__
 #endif
@@ -47,17 +46,19 @@ then using the CREQ_API_VISIBILITY flag to "export" the same symbols the way CRE
 #elif defined(CREQ_IMPORT_SYMBOLS)
 #define CREQ_PUBLIC(type)   __declspec(dllimport) type CREQ_STDCALL
 #endif
+#define CREQ_PRIVATE(type) static type
 #else /* !__WINDOWS__ */
 #define CREQ_CDECL
 #define CREQ_STDCALL
 
 #if (defined(__GNUC__) || defined(__SUNPRO_CC) || defined (__SUNPRO_C)) && defined(CREQ_API_VISIBILITY)
 #define CREQ_PUBLIC(type)   __attribute__((visibility("default"))) type
+#define CREQ_PRIVATE(type) __attribute__((visibility("hidden"))) type
 #else
 #define CREQ_PUBLIC(type) type
+#define CREQ_PRIVATE(type) static type
 #endif
 #endif
-// END OF COPIED CODE
 
 typedef int creq_status_t;
 #define CREQ_STATUS_SUCC 0
@@ -81,7 +82,8 @@ typedef enum creq_HttpMethod_e
     DELETE,
     CONNECT,
     OPTIONS,
-    TRACE
+    TRACE,
+    _UNKNOWN
 } creq_HttpMethod_t;
 
 typedef enum creq_ConfigType_e
@@ -274,6 +276,11 @@ CREQ_PUBLIC(creq_status_t) creq_Request_free(creq_Request_t *req);
 CREQ_PUBLIC(creq_status_t) creq_Request_set_http_method(creq_Request_t *req, creq_HttpMethod_t method);
 
 /**
+ * @brief Get the creq_Request object's http method.
+ */
+CREQ_PUBLIC(creq_HttpMethod_t) creq_Request_get_http_method(creq_Request_t *req);
+
+/**
  * @brief Set the creq_Request object's target to the given string.
  *  @see creq_Request::request_target
  * @param requestTarget The pointer to the new target. NULL will clear the target.
@@ -285,14 +292,27 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_http_method(creq_Request_t *req, cre
 CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, const char *requestTarget);
 
 /**
+ * @brief Get the creq_Request object's target
+ * @return A pointer to the target string.
+ *  @retval NULL No target specified or invalid argument given.
+ * @attention The returned pointer points to the internal object. DO NOT MODIFY IT.
+ */
+CREQ_PUBLIC(char *) creq_Request_get_target(creq_Request_t *req);
+
+/**
  * @brief Set the http version of the creq_Request object.
  *  @see creq_Request::http_version
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @attention The version is stored as the 'masked value', such as 0101 which means HTTP/1.1.
  */
 CREQ_PUBLIC(creq_status_t) creq_Request_set_http_version(creq_Request_t *req, int major, int minor);
+
+/**
+ * @brief Get the http version of the creq_Request object.
+ * @retval The object which contains the version.
+ */
+CREQ_PUBLIC(creq_HttpVersion_t) creq_Request_get_http_version(creq_Request_t *req);
 
 /**
  * @brief Set the creq_Request object's message body to the given string.
@@ -304,6 +324,22 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_http_version(creq_Request_t *req, in
  * @attention This procedure stores a copy of the given string.
  */
 CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, const char *msg);
+
+/**
+ * @brief Get the creq_Request object's message body.
+ * @return The pointer to the message body string.
+ *  @retval NULL Message body not defined or bad argument given.
+ * @attention The returned pointer points to the internal object. DO NOT MODIFY IT.
+ */
+CREQ_PUBLIC(char *) creq_Request_get_message_body(creq_Request_t *req);
+
+/**
+ * @brief Create the full request text using the given creq_Request object.
+ * @return A pointer to the newly created request string.
+ *  @retval NULL Some fields undefined or invalid.
+ * @attention This procedure will return a NEWLY MALLOC'ED string. Creq will not store it. It's the caller's responsibility to deal with it and free it.
+ */
+CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req);
 
 #ifdef __cplusplus
 }

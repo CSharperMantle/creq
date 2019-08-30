@@ -9,15 +9,15 @@
 #include "creq.h"
 
 
-static void *_creq_malloc_n_init(size_t size)
+CREQ_PRIVATE(void *) _creq_malloc_n_init(size_t size)
 {
     void *pNewSpace = malloc(size);
     memset(pNewSpace, 0, size);
     return pNewSpace;
 }
 
-///@attention Don't forget to free the pointer returned!
-static char *_creq_malloc_strcpy(const char *src)
+/// @attention Don't forget to free the pointer returned!
+CREQ_PRIVATE(char *) _creq_malloc_strcpy(const char *src)
 {
     size_t fullLen = strlen(src) + 1;
     char *dest = (char *)malloc(sizeof(char) * fullLen);
@@ -195,6 +195,15 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_http_method(creq_Request_t *req, cre
     return CREQ_STATUS_SUCC;
 }
 
+CREQ_PUBLIC(creq_HttpMethod_t) creq_Request_get_http_method(creq_Request_t *req)
+{
+    if (req == NULL)
+    {
+        return _UNKNOWN;
+    }
+    return req->method;
+}
+
 CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, const char *requestTarget)
 {
     if (req == NULL)
@@ -213,11 +222,38 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, const ch
     return CREQ_STATUS_SUCC;
 }
 
+CREQ_PUBLIC(char *) creq_Request_get_target(creq_Request_t *req)
+{
+    if (req == NULL)
+    {
+        return NULL;
+    }
+    return req->request_target;
+}
+
 CREQ_PUBLIC(creq_status_t) creq_Request_set_http_version(creq_Request_t *req, int major, int minor)
 {
+    if (req == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
     req->http_version.major = major;
     req->http_version.minor = minor;
     return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_HttpVersion_t) creq_Request_get_http_version(creq_Request_t *req)
+{
+    creq_HttpVersion_t obj;
+    obj.major = -1;
+    obj.minor = -1;
+    if (req == NULL)
+    {
+        return obj;
+    }
+    obj.major = req->http_version.major;
+    obj.minor = req->http_version.minor;
+    return obj;
 }
 
 CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, const char *msg)
@@ -235,4 +271,23 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, co
     char *pMsgCopy = _creq_malloc_strcpy(msg);
     req->message_body = pMsgCopy;
     return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(char *) creq_Request_get_message_body(creq_Request_t *req)
+{
+    if (req == NULL)
+    {
+        return NULL;
+    }
+    return req->message_body;
+}
+
+CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
+{
+    if (req == NULL)
+    {
+        return NULL;
+    }
+    /// @todo To be finished.
+    return NULL;
 }
