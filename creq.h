@@ -251,7 +251,7 @@ CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_delist_header(creq_He
  * @attention Always use creq_Request_free when done.
  *  @see creq_Request_free
  */
-CREQ_PUBLIC(creq_Request_t *) creq_Request_create();
+CREQ_PUBLIC(creq_Request_t *) creq_Request_create(creq_Config_t *conf);
 
 /**
  * @brief Frees a previously-created creq_Request object.

@@ -16,6 +16,16 @@ CREQ_PRIVATE(const char *) _creq_FMT_REQUEST_STATUS_LINE = "%s %s %s%s";
 // HTTP/$(major).$(minor)
 CREQ_PRIVATE(const char *) _creq_FMT_HTTP_VERSION = "HTTP/%d.%d";
 
+// Header-Head: Header-Value line_ending
+CREQ_PRIVATE(const char *) _creq_FMT_HEADER = "%s: %s%s";
+
+// REQUEST_STATUS_LINE(with ending)
+// HEADER(with ending)
+// line_ending
+// BODY
+// line_ending
+CREQ_PRIVATE(const char *) _creq_FMT_FULL_REQUEST = "%s%s%s%s%s";
+
 CREQ_PRIVATE(void *) _creq_malloc_n_init(size_t size)
 {
     void *pNewSpace = malloc(size);
@@ -87,7 +97,7 @@ CREQ_PRIVATE(const char *) _creq_get_http_method_str(creq_HttpMethod_t meth)
 /// @attention Don't forget to free the returned string! THE STR IS MALLOC'ED!
 CREQ_PRIVATE(char *) _creq_get_http_version_str(int major, int minor)
 {
-    int len = snprintf((char *)NULL, 0U, _creq_FMT_HTTP_VERSION, major, minor);
+    ssize_t len = snprintf((char *)NULL, 0U, _creq_FMT_HTTP_VERSION, major, minor);
     char *str = (char *)_creq_malloc_n_init(sizeof(char) * (len + 1));
     snprintf(str, len + 1, _creq_FMT_HTTP_VERSION, major, minor);
     return str;
@@ -205,15 +215,22 @@ CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_delist_header(creq_He
     return pNodeToDelete;
 }
 
-CREQ_PUBLIC(creq_Request_t *) creq_Request_create()
+CREQ_PUBLIC(creq_Request_t *) creq_Request_create(creq_Config_t *conf)
 {
     creq_Request_t *pRequest = (creq_Request_t *)_creq_malloc_n_init(sizeof(struct creq_Request));
 
-    creq_Config_t config;
-    config.config_type = CONF_REQUEST;
-    config.data.request_config.line_ending = LE_CRLF;
-    pRequest->config = config;
-    pRequest->method = 0;
+    if (conf != NULL && conf->config_type == CONF_REQUEST)
+    {
+        pRequest->config = *conf;
+    }
+    else
+    {
+        creq_Config_t config;
+        config.config_type = CONF_REQUEST;
+        config.data.request_config.line_ending = LE_CRLF;
+        pRequest->config = config;
+    }
+    pRequest->method = _UNKNOWN;
     pRequest->request_target = NULL;
     pRequest->http_version.major = 0;
     pRequest->http_version.minor = 0;
@@ -356,17 +373,76 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     {
         return NULL;
     }
+    char *status_line_s = NULL, *headers_s = NULL, *body_s = NULL;
+
     const char *line_ending_s = _creq_get_line_ending_str(&req->config, CONF_REQUEST);
     const char *http_meth_s = _creq_get_http_method_str(req->method);
     char *http_version_s = _creq_get_http_version_str(req->http_version.major, req->http_version.minor);
 
-    int status_line_len = snprintf(NULL, 0, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
-    char *status_line_s = (char *)_creq_malloc_n_init(sizeof(char) * (status_line_len + 1));
+    ssize_t status_line_len = snprintf(NULL, 0, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
+    status_line_s = (char *)_creq_malloc_n_init(sizeof(char) * (status_line_len + 1));
     snprintf(status_line_s, status_line_len + 1, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
     CREQ_GUARDED_FREE(http_version_s);
 
-    // we now have a status_line_s string. Others are garbage now.
+    // we now have a status_line_s string. Others are garbage now, except for line_ending_s
 
-    /// @todo To be finished.
-    return NULL;
+    // walk the linked list
+    size_t header_list_len = 0;
+    creq_HeaderLListNode_t *cursor = req->list_head;
+    while (cursor != NULL)
+    {
+        header_list_len ++;
+        cursor = cursor->next;
+    }
+    if (header_list_len != 0)
+    {
+        size_t idx = 0;
+        ssize_t str_len = 0;
+        creq_HeaderField_t *fields[header_list_len];
+        cursor = req->list_head;
+        while (cursor != NULL)
+        {
+            fields[idx] = cursor->data;
+            idx ++;
+            cursor = cursor->next;
+        }
+
+        for (idx = 0; idx < header_list_len; idx ++)
+        {
+            str_len += snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+        }
+        headers_s = (char *)_creq_malloc_n_init(sizeof(char) * (str_len + 1));
+        for (idx = 0; idx < header_list_len; idx ++)
+        {
+            char *str;
+            ssize_t len = snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+            str = (char *)_creq_malloc_n_init(sizeof(char) * (len + 1));
+            snprintf(str, len + 1, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+            strcat(headers_s, str);
+            CREQ_GUARDED_FREE(str);
+        }
+    }
+
+    body_s = req->message_body;
+
+    char *full_req_s = NULL;
+    ssize_t full_len = snprintf(NULL, 0, _creq_FMT_FULL_REQUEST,
+                                status_line_s,
+                                headers_s == NULL ? "" : headers_s,
+                                line_ending_s,
+                                body_s == NULL ? "" : body_s,
+                                line_ending_s);
+    full_req_s = (char *)_creq_malloc_n_init(sizeof(char) * (full_len + 1));
+    snprintf(full_req_s, full_len + 1, _creq_FMT_FULL_REQUEST,
+             status_line_s,
+             headers_s == NULL ? "" : headers_s,
+             line_ending_s,
+             body_s == NULL ? "" : body_s,
+             line_ending_s);
+
+    CREQ_GUARDED_FREE(status_line_s);
+    CREQ_GUARDED_FREE(headers_s);
+
+    /// @todo DEBUG REQUIRED
+    return full_req_s;
 }
