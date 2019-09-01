@@ -1,0 +1,8 @@
+os: windows
+
+language: c
+
+compiler: gcc
+
+scripts:
+  - make all
