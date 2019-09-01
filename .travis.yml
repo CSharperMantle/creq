@@ -6,5 +6,5 @@ compiler:
   - gcc
   - clang
 
-scripts:
+script:
   - "make all"
