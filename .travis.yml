@@ -1,4 +1,4 @@
-platform: windows
+os: windows
 
 language: c
 
