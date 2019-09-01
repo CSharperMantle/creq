@@ -8,7 +8,7 @@ WORKDIR = %cd%
 # CC = gcc.exe
 # CXX = g++.exe
 # AR = ar.exe
-LD = g++.exe
+# LD = g++.exe
 # WINDRES = windres.exe
 
 INC = 
@@ -80,10 +80,7 @@ before_lib_debug:
 
 after_lib_debug: 
 
-lib_debug: before_lib_debug out_lib_debug after_lib_debug
-
-out_lib_debug: before_lib_debug $(OBJ_LIB_DEBUG) $(DEP_LIB_DEBUG)
-	$(LD) -shared $(LIBDIR_LIB_DEBUG) $(OBJ_LIB_DEBUG)  -o $(OUT_LIB_DEBUG) $(LDFLAGS_LIB_DEBUG) $(LIB_LIB_DEBUG)
+lib_debug: before_lib_debug after_lib_debug
 
 $(OBJDIR_LIB_DEBUG)\\creq.o: creq.c
 	$(CC) $(CFLAGS_LIB_DEBUG) $(INC_LIB_DEBUG) -c creq.c -o $(OBJDIR_LIB_DEBUG)\\creq.o
@@ -99,10 +96,7 @@ before_lib_release:
 
 after_lib_release: 
 
-lib_release: before_lib_release out_lib_release after_lib_release
-
-out_lib_release: before_lib_release $(OBJ_LIB_RELEASE) $(DEP_LIB_RELEASE)
-	$(LD) -shared $(LIBDIR_LIB_RELEASE) $(OBJ_LIB_RELEASE)  -o $(OUT_LIB_RELEASE) $(LDFLAGS_LIB_RELEASE) $(LIB_LIB_RELEASE)
+lib_release: before_lib_release after_lib_release
 
 $(OBJDIR_LIB_RELEASE)\\creq.o: creq.c
 	$(CC) $(CFLAGS_LIB_RELEASE) $(INC_LIB_RELEASE) -c creq.c -o $(OBJDIR_LIB_RELEASE)\\creq.o
@@ -118,10 +112,7 @@ before_lib_fullyoptimized:
 
 after_lib_fullyoptimized: 
 
-lib_fullyoptimized: before_lib_fullyoptimized out_lib_fullyoptimized after_lib_fullyoptimized
-
-out_lib_fullyoptimized: before_lib_fullyoptimized $(OBJ_LIB_FULLYOPTIMIZED) $(DEP_LIB_FULLYOPTIMIZED)
-	$(LD) -shared $(LIBDIR_LIB_FULLYOPTIMIZED) $(OBJ_LIB_FULLYOPTIMIZED)  -o $(OUT_LIB_FULLYOPTIMIZED) $(LDFLAGS_LIB_FULLYOPTIMIZED) $(LIB_LIB_FULLYOPTIMIZED)
+lib_fullyoptimized: before_lib_fullyoptimized after_lib_fullyoptimized
 
 $(OBJDIR_LIB_FULLYOPTIMIZED)\\creq.o: creq.c
 	$(CC) $(CFLAGS_LIB_FULLYOPTIMIZED) $(INC_LIB_FULLYOPTIMIZED) -c creq.c -o $(OBJDIR_LIB_FULLYOPTIMIZED)\\creq.o
@@ -137,10 +128,7 @@ before_test_debug:
 
 after_test_debug: 
 
-test_debug: before_test_debug out_test_debug after_test_debug
-
-out_test_debug: before_test_debug $(OBJ_TEST_DEBUG) $(DEP_TEST_DEBUG)
-	$(LD) $(LIBDIR_TEST_DEBUG) -o $(OUT_TEST_DEBUG) $(OBJ_TEST_DEBUG)  $(LDFLAGS_TEST_DEBUG) $(LIB_TEST_DEBUG)
+test_debug: before_test_debug after_test_debug
 
 $(OBJDIR_TEST_DEBUG)\\creq.o: creq.c
 	$(CC) $(CFLAGS_TEST_DEBUG) $(INC_TEST_DEBUG) -c creq.c -o $(OBJDIR_TEST_DEBUG)\\creq.o
