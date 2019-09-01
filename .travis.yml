@@ -1,3 +1,5 @@
+platform: windows
+
 language: c
 
 compiler:
@@ -5,4 +7,4 @@ compiler:
   - clang
 
 script:
-  - "make all"
+  - "mingw32-make.exe all"
