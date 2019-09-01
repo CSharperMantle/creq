@@ -2,7 +2,9 @@ os: windows
 
 language: c
 
-compiler: gcc
+compiler:
+  - gcc
+  - clang
 
 scripts:
-  - make all
+  - "make all"
