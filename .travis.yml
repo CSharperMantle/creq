@@ -7,4 +7,4 @@ compiler:
   - clang
 
 script:
-  - "mingw32-make.exe all"
+  - "mingw32-make.exe -f Makefile.win all"

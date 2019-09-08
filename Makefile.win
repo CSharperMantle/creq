@@ -5,11 +5,11 @@
 
 WORKDIR = %cd%
 
-# CC = gcc.exe
-# CXX = g++.exe
-# AR = ar.exe
-# LD = g++.exe
-# WINDRES = windres.exe
+CC = gcc.exe
+CXX = g++.exe
+AR = ar.exe
+LD = g++.exe
+WINDRES = windres.exe
 
 INC = 
 CFLAGS = -Weffc++ -Wall -fvisibility=hidden
@@ -80,15 +80,18 @@ before_lib_debug:
 
 after_lib_debug: 
 
-lib_debug: before_lib_debug after_lib_debug
+lib_debug: before_lib_debug out_lib_debug after_lib_debug
+
+out_lib_debug: before_lib_debug $(OBJ_LIB_DEBUG) $(DEP_LIB_DEBUG)
+	$(LD) -shared $(LIBDIR_LIB_DEBUG) $(OBJ_LIB_DEBUG)  -o $(OUT_LIB_DEBUG) $(LDFLAGS_LIB_DEBUG) $(LIB_LIB_DEBUG)
 
 $(OBJDIR_LIB_DEBUG)\\creq.o: creq.c
 	$(CC) $(CFLAGS_LIB_DEBUG) $(INC_LIB_DEBUG) -c creq.c -o $(OBJDIR_LIB_DEBUG)\\creq.o
 
 clean_lib_debug: 
 	cmd /c del /f $(OBJ_LIB_DEBUG) $(OUT_LIB_DEBUG)
-	cmd /c rd bin\\Lib_Debug
-	cmd /c rd $(OBJDIR_LIB_DEBUG)
+	cmd /c rd /Q /S bin\\Lib_Debug
+	cmd /c rd /Q /S $(OBJDIR_LIB_DEBUG)
 
 before_lib_release: 
 	cmd /c if not exist bin\\Lib_Release md bin\\Lib_Release
@@ -96,15 +99,18 @@ before_lib_release:
 
 after_lib_release: 
 
-lib_release: before_lib_release after_lib_release
+lib_release: before_lib_release out_lib_release after_lib_release
+
+out_lib_release: before_lib_release $(OBJ_LIB_RELEASE) $(DEP_LIB_RELEASE)
+	$(LD) -shared $(LIBDIR_LIB_RELEASE) $(OBJ_LIB_RELEASE)  -o $(OUT_LIB_RELEASE) $(LDFLAGS_LIB_RELEASE) $(LIB_LIB_RELEASE)
 
 $(OBJDIR_LIB_RELEASE)\\creq.o: creq.c
 	$(CC) $(CFLAGS_LIB_RELEASE) $(INC_LIB_RELEASE) -c creq.c -o $(OBJDIR_LIB_RELEASE)\\creq.o
 
 clean_lib_release: 
 	cmd /c del /f $(OBJ_LIB_RELEASE) $(OUT_LIB_RELEASE)
-	cmd /c rd bin\\Lib_Release
-	cmd /c rd $(OBJDIR_LIB_RELEASE)
+	cmd /c rd /Q /S bin\\Lib_Release
+	cmd /c rd /Q /S $(OBJDIR_LIB_RELEASE)
 
 before_lib_fullyoptimized: 
 	cmd /c if not exist bin\\Lib_FullyOptimized md bin\\Lib_FullyOptimized
@@ -112,15 +118,18 @@ before_lib_fullyoptimized:
 
 after_lib_fullyoptimized: 
 
-lib_fullyoptimized: before_lib_fullyoptimized after_lib_fullyoptimized
+lib_fullyoptimized: before_lib_fullyoptimized out_lib_fullyoptimized after_lib_fullyoptimized
+
+out_lib_fullyoptimized: before_lib_fullyoptimized $(OBJ_LIB_FULLYOPTIMIZED) $(DEP_LIB_FULLYOPTIMIZED)
+	$(LD) -shared $(LIBDIR_LIB_FULLYOPTIMIZED) $(OBJ_LIB_FULLYOPTIMIZED)  -o $(OUT_LIB_FULLYOPTIMIZED) $(LDFLAGS_LIB_FULLYOPTIMIZED) $(LIB_LIB_FULLYOPTIMIZED)
 
 $(OBJDIR_LIB_FULLYOPTIMIZED)\\creq.o: creq.c
 	$(CC) $(CFLAGS_LIB_FULLYOPTIMIZED) $(INC_LIB_FULLYOPTIMIZED) -c creq.c -o $(OBJDIR_LIB_FULLYOPTIMIZED)\\creq.o
 
 clean_lib_fullyoptimized: 
 	cmd /c del /f $(OBJ_LIB_FULLYOPTIMIZED) $(OUT_LIB_FULLYOPTIMIZED)
-	cmd /c rd bin\\Lib_FullyOptimized
-	cmd /c rd $(OBJDIR_LIB_FULLYOPTIMIZED)
+	cmd /c rd /Q /S bin\\Lib_FullyOptimized
+	cmd /c rd /Q /S $(OBJDIR_LIB_FULLYOPTIMIZED)
 
 before_test_debug: 
 	cmd /c if not exist bin\\Test_Debug md bin\\Test_Debug
@@ -128,7 +137,10 @@ before_test_debug:
 
 after_test_debug: 
 
-test_debug: before_test_debug after_test_debug
+test_debug: before_test_debug out_test_debug after_test_debug
+
+out_test_debug: before_test_debug $(OBJ_TEST_DEBUG) $(DEP_TEST_DEBUG)
+	$(LD) $(LIBDIR_TEST_DEBUG) -o $(OUT_TEST_DEBUG) $(OBJ_TEST_DEBUG)  $(LDFLAGS_TEST_DEBUG) $(LIB_TEST_DEBUG)
 
 $(OBJDIR_TEST_DEBUG)\\creq.o: creq.c
 	$(CC) $(CFLAGS_TEST_DEBUG) $(INC_TEST_DEBUG) -c creq.c -o $(OBJDIR_TEST_DEBUG)\\creq.o
@@ -138,8 +150,8 @@ $(OBJDIR_TEST_DEBUG)\\creq_test.o: creq_test.c
 
 clean_test_debug: 
 	cmd /c del /f $(OBJ_TEST_DEBUG) $(OUT_TEST_DEBUG)
-	cmd /c rd bin\\Test_Debug
-	cmd /c rd $(OBJDIR_TEST_DEBUG)
+	cmd /c rd /Q /S bin\\Test_Debug
+	cmd /c rd /Q /S $(OBJDIR_TEST_DEBUG)
 
 .PHONY: before_lib_debug after_lib_debug clean_lib_debug before_lib_release after_lib_release clean_lib_release before_lib_fullyoptimized after_lib_fullyoptimized clean_lib_fullyoptimized before_test_debug after_test_debug clean_test_debug
 
