@@ -97,7 +97,7 @@ CREQ_PRIVATE(const char *) _creq_get_http_method_str(creq_HttpMethod_t meth)
 /// @attention Don't forget to free the returned string! THE STR IS MALLOC'ED!
 CREQ_PRIVATE(char *) _creq_get_http_version_str(int major, int minor)
 {
-    ssize_t len = snprintf((char *)NULL, 0U, _creq_FMT_HTTP_VERSION, major, minor);
+    int len = snprintf((char *)NULL, 0U, _creq_FMT_HTTP_VERSION, major, minor);
     char *str = (char *)_creq_malloc_n_init(sizeof(char) * (len + 1));
     snprintf(str, len + 1, _creq_FMT_HTTP_VERSION, major, minor);
     return str;
@@ -379,7 +379,7 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     const char *http_meth_s = _creq_get_http_method_str(req->method);
     char *http_version_s = _creq_get_http_version_str(req->http_version.major, req->http_version.minor);
 
-    ssize_t status_line_len = snprintf(NULL, 0, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
+    int status_line_len = snprintf(NULL, 0, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
     status_line_s = (char *)_creq_malloc_n_init(sizeof(char) * (status_line_len + 1));
     snprintf(status_line_s, status_line_len + 1, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
     CREQ_GUARDED_FREE(http_version_s);
@@ -397,7 +397,7 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     if (header_list_len != 0)
     {
         size_t idx = 0;
-        ssize_t str_len = 0;
+        int str_len = 0;
         creq_HeaderField_t *fields[header_list_len];
         cursor = req->list_head;
         while (cursor != NULL)
@@ -415,7 +415,7 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
         for (idx = 0; idx < header_list_len; idx ++)
         {
             char *str;
-            ssize_t len = snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+            int len = snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
             str = (char *)_creq_malloc_n_init(sizeof(char) * (len + 1));
             snprintf(str, len + 1, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
             strcat(headers_s, str);
@@ -426,7 +426,7 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     body_s = req->message_body;
 
     char *full_req_s = NULL;
-    ssize_t full_len = snprintf(NULL, 0, _creq_FMT_FULL_REQUEST,
+    int full_len = snprintf(NULL, 0, _creq_FMT_FULL_REQUEST,
                                 status_line_s,
                                 headers_s == NULL ? "" : headers_s,
                                 line_ending_s,
