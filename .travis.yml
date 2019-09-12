@@ -3,8 +3,8 @@ language: c
 matrix:
   include:
     - name: "Windows gcc C"
-      env: CC="gcc.exe" CXX="g++.exe" AR="ar.exe" LD="g++.exe" WINDRES="windres.exe"
+      env: CC="gcc.exe" CXX="g++.exe" AR="ar.exe" LD="g++.exe" WINDRES="windres.exe" ADD_CFLAGS="" ADD_LDFLAGS=""
     - name: "Windows clang C"
-      env: CC="clang.exe" CXX="clang++.exe" AR="llvm-ar.exe" LD="clang++.exe" WINDRES="windres.exe"
+      env: CC="clang.exe" CXX="clang++.exe" AR="llvm-ar.exe" LD="clang++.exe" WINDRES="windres.exe" ADD_CFLAGS="--target=i686-pc-mingw32" ADD_LDFLAGS="--target=i686-pc-mingw32"
 script:
-  - mingw32-make.exe CC=$CC CXX=$CXX AR=$AR LD=$LD WINDRES=$WINDRES -f Makefile.win lib_fullyoptimized lib_release
+  - mingw32-make.exe CC=$CC CXX=$CXX AR=$AR LD=$LD WINDRES=$WINDRES ADD_CFLAGS=$ADD_CFLAGS ADD_LDFLAGS=$ADD_LDFLAGS -f Makefile.win lib_release
