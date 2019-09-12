@@ -7,4 +7,4 @@ matrix:
     - name: "Windows clang C"
       env: CC="clang.exe" CXX="clang++.exe" AR="llvm-ar.exe" LD="clang++.exe" WINDRES="windres.exe"
 script:
-  - "mingw32-make.exe" CC=$CC CXX=$CXX AR=$AR LD=$LD WINDRES=$WINDRES -f "Makefile.win" lib_fullyoptimized lib_release
+  - mingw32-make.exe CC=$CC CXX=$CXX AR=$AR LD=$LD WINDRES=$WINDRES -f Makefile.win lib_fullyoptimized lib_release
