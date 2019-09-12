@@ -5,14 +5,17 @@
 
 WORKDIR = %cd%
 
-CC = gcc.exe
-CXX = g++.exe
-AR = ar.exe
-LD = g++.exe
-WINDRES = windres.exe
+# compilers and env vars are defined by caller
+# these settings use MinGW on Windows as builder
+
+# CC = gcc.exe
+# CXX = g++.exe
+# AR = ar.exe
+# LD = g++.exe
+# WINDRES = windres.exe
 
 INC = 
-CFLAGS = -Weffc++ -Wall -fvisibility=hidden
+CFLAGS = -Wall -fvisibility=hidden
 RESINC = 
 LIBDIR = 
 LIB = 
