@@ -16,7 +16,7 @@ LD = g++
 WINDRES = windres
 
 INC = 
-CFLAGS = -Wall -fvisibility=hidden
+CFLAGS = -Wall -fvisibility=hidden -fPIC
 ADD_CFLAGS = 
 RESINC = 
 LIBDIR = 
