@@ -440,6 +440,5 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     CREQ_GUARDED_FREE(status_line_s);
     CREQ_GUARDED_FREE(headers_s);
 
-    /// @todo DEBUG REQUIRED
     return full_req_s;
 }
