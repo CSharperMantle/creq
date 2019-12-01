@@ -12,6 +12,8 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
+build
+
 # toptal/gitignore/templates/VisualStudioCode.gitignore
 
 .vscode/*
