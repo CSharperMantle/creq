@@ -17,7 +17,8 @@ int main(int argc, char **argv)
     creq_HeaderLListNode_add_header(&req->list_head, "User-agent", "creq/0.1.0");
     creq_HeaderLListNode_add_header(&req->list_head, "Connection", "close");
     creq_Request_set_message_body(req, "");
-    printf("%s\n", creq_Request_stringify(req));
+    char *req_str = creq_Request_stringify(req);
+    printf("%s\n", req_str);
     creq_Request_free(req);
     return 0;
 }

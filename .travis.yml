@@ -1,0 +1,28 @@
+language: c
+matrix:
+  include:
+    - name: "Windows gcc C"
+      os: windows
+      compiler: gcc
+      env: MAKE="mingw32-make.exe"
+    - name: "Windows clang C"
+      os: windows
+      compiler: clang
+      env: MAKE="mingw32-make.exe"
+    - name: "Linux gcc C"
+      os: linux
+      compiler: gcc
+      env: MAKE="make"
+    - name: "Linux clang C"
+      os: linux
+      compiler: clang
+      env: MAKE="make"
+
+before_script:
+  - cmake --version
+  - mkdir build
+  - cd build
+  - cmake . $TRAVIS_BUILD_DIR
+
+script:
+  - $MAKE all

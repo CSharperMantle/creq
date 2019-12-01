@@ -10,19 +10,54 @@
 #include <stdarg.h>
 #include "creq.h"
 
-// $(method) /target/path HTTP/1.1 line_ending(\r, \n || \r\n)
+/*
+ * RFC 7320
+ * Whitespace Rules
+ *   OWS            = *( SP / HTAB )
+ *                  ; optional whitespace
+ *   RWS            = 1*( SP / HTAB )
+ *                  ; required whitespace
+ *   BWS            = OWS
+ *                  ; "bad" whitespace
+ */
+
+/*
+ * RFC 7230
+ * status-line = HTTP-version SP status-code SP reason-phrase CRLF
+ * 
+ * $(method) /target/path HTTP/1.1 line_ending(\r, \n || \r\n)
+ */
 CREQ_PRIVATE(const char *) _creq_FMT_REQUEST_STATUS_LINE = "%s %s %s%s";
 
-// HTTP/$(major).$(minor)
+/*
+ * RFC 7230
+ * HTTP-version  = HTTP-name "/" DIGIT "." DIGIT
+ * HTTP-name     = %x48.54.54.50 ; "HTTP", case-sensitive
+ * 
+ * HTTP/$(major).$(minor)
+ */
 CREQ_PRIVATE(const char *) _creq_FMT_HTTP_VERSION = "HTTP/%d.%d";
 
-// Header-Head: Header-Value line_ending
+/*
+ * RFC 7230
+ * header-field   = field-name ":" OWS field-value OWS
+ * 
+ * Header-Head: Header-Value line_ending
+ */
 CREQ_PRIVATE(const char *) _creq_FMT_HEADER = "%s: %s%s";
 
-// REQUEST_STATUS_LINE(with ending)
-// HEADER(with ending)
-// BODY
-// line_ending
+/*
+ * RFC 7230
+ * HTTP-message   = start-line
+ *                  *( header-field CRLF )
+ *                  CRLF
+ *                  [ message-body ]
+ * 
+ * REQUEST_STATUS_LINE(with line_ending)
+ * HEADER(with line_ending)
+ * line_ending
+ * BODY
+ */
 CREQ_PRIVATE(const char *) _creq_FMT_FULL_REQUEST = "%s%s%s%s";
 
 CREQ_PRIVATE(void *) _creq_malloc_n_init(size_t size)
@@ -428,14 +463,14 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     int full_len = snprintf(NULL, 0, _creq_FMT_FULL_REQUEST,
                                 status_line_s,
                                 headers_s == NULL ? line_ending_s : headers_s,
-                                body_s == NULL ? "" : body_s,
-                                line_ending_s);
+                                line_ending_s,
+                                body_s == NULL ? "" : body_s);
     full_req_s = (char *)_creq_malloc_n_init(sizeof(char) * (full_len + 1));
     snprintf(full_req_s, full_len + 1, _creq_FMT_FULL_REQUEST,
              status_line_s,
              headers_s == NULL ? line_ending_s : headers_s,
-             body_s == NULL ? "" : body_s,
-             line_ending_s);
+             line_ending_s,
+             body_s == NULL ? "" : body_s);
 
     CREQ_GUARDED_FREE(status_line_s);
     CREQ_GUARDED_FREE(headers_s);
