@@ -21,10 +21,9 @@ CREQ_PRIVATE(const char *) _creq_FMT_HEADER = "%s: %s%s";
 
 // REQUEST_STATUS_LINE(with ending)
 // HEADER(with ending)
-// line_ending
 // BODY
 // line_ending
-CREQ_PRIVATE(const char *) _creq_FMT_FULL_REQUEST = "%s%s%s%s%s";
+CREQ_PRIVATE(const char *) _creq_FMT_FULL_REQUEST = "%s%s%s%s";
 
 CREQ_PRIVATE(void *) _creq_malloc_n_init(size_t size)
 {
@@ -428,15 +427,13 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     char *full_req_s = NULL;
     int full_len = snprintf(NULL, 0, _creq_FMT_FULL_REQUEST,
                                 status_line_s,
-                                headers_s == NULL ? "" : headers_s,
-                                line_ending_s,
+                                headers_s == NULL ? line_ending_s : headers_s,
                                 body_s == NULL ? "" : body_s,
                                 line_ending_s);
     full_req_s = (char *)_creq_malloc_n_init(sizeof(char) * (full_len + 1));
     snprintf(full_req_s, full_len + 1, _creq_FMT_FULL_REQUEST,
              status_line_s,
-             headers_s == NULL ? "" : headers_s,
-             line_ending_s,
+             headers_s == NULL ? line_ending_s : headers_s,
              body_s == NULL ? "" : body_s,
              line_ending_s);
 
