@@ -4,11 +4,11 @@ matrix:
     - name: "Windows gcc C"
       os: windows
       compiler: gcc
-      env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles"
+      env: MAKE="make" CMAKE_GENERATOR="MinGW Makefiles"
     - name: "Windows clang C"
       os: windows
       compiler: clang
-      env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles"
+      env: MAKE="make" CMAKE_GENERATOR="MinGW Makefiles"
     - name: "Linux gcc C"
       os: linux
       compiler: gcc
