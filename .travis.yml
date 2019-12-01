@@ -22,7 +22,7 @@ before_script:
   - cmake --version
   - mkdir build
   - cd build
-  - cmake -B . -S $TRAVIS_BUILD_DIR -G "MinGW Makefiles"
+  - cmake -B . -S $TRAVIS_BUILD_DIR -G "Unix Makefiles"
 
 script:
   - $MAKE all
