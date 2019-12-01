@@ -4,11 +4,11 @@ matrix:
     - name: "Windows gcc C"
       os: windows
       compiler: gcc
-      env: MAKE="mingw32-make.exe" CMAKE_GENERATOR="MinGW Makefiles" CMAKE_SH="CMAKE_SH-NOTFOUND"
+      env: MAKE="mingw32-make.exe" CMAKE_GENERATOR="MSYS Makefiles"
     - name: "Windows clang C"
       os: windows
       compiler: clang
-      env: MAKE="mingw32-make.exe" CMAKE_GENERATOR="MinGW Makefiles" CMAKE_SH="CMAKE_SH-NOTFOUND"
+      env: MAKE="mingw32-make.exe" CMAKE_GENERATOR="MSYS Makefiles"
     - name: "Linux gcc C"
       os: linux
       compiler: gcc
@@ -22,7 +22,7 @@ before_script:
   - cmake --version
   - mkdir build
   - cd build
-  - if ["$TRAVIS_OS_NAME" = "windows" ]; then cmake -B . -S $TRAVIS_BUILD_DIR; else cmake -B . -S $TRAVIS_BUILD_DIR; fi
+  - cmake -B . -S $TRAVIS_BUILD_DIR
 
 script:
   - $MAKE all
