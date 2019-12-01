@@ -4,11 +4,11 @@ matrix:
     - name: "Windows gcc C"
       os: windows
       compiler: gcc
-      env: MAKE="mingw32-make.exe" CMAKE_GENERATOR="MinGW Makefiles"
+      env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles"
     - name: "Windows clang C"
       os: windows
       compiler: clang
-      env: MAKE="mingw32-make.exe" CMAKE_GENERATOR="MinGW Makefiles"
+      env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles"
     - name: "Linux gcc C"
       os: linux
       compiler: gcc
@@ -19,6 +19,7 @@ matrix:
       env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles"
 
 before_script:
+  - if ["$TRAVIS_OS_NAME" = "windows" ]; then choco install make; fi
   - cmake --version
   - mkdir build
   - cd build
