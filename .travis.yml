@@ -4,11 +4,11 @@ matrix:
     - name: "Windows gcc C"
       os: windows
       compiler: gcc
-      env: MAKE="make" CMAKE_GENERATOR="MinGW Makefiles"
+      env: MAKE="mingw32-make.exe" CMAKE_GENERATOR="MinGW Makefiles" CMAKE_SH="CMAKE_SH-NOTFOUND"
     - name: "Windows clang C"
       os: windows
       compiler: clang
-      env: MAKE="make" CMAKE_GENERATOR="MinGW Makefiles"
+      env: MAKE="mingw32-make.exe" CMAKE_GENERATOR="MinGW Makefiles" CMAKE_SH="CMAKE_SH-NOTFOUND"
     - name: "Linux gcc C"
       os: linux
       compiler: gcc
@@ -19,11 +19,10 @@ matrix:
       env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles"
 
 before_script:
-  - if ["$TRAVIS_OS_NAME" = "windows" ]; then choco install make; fi
   - cmake --version
   - mkdir build
   - cd build
-  - if ["$TRAVIS_OS_NAME" = "windows" ]; then cmd -c cmake -B . -S $TRAVIS_BUILD_DIR; else cmake -B . -S $TRAVIS_BUILD_DIR; fi
+  - if ["$TRAVIS_OS_NAME" = "windows" ]; then cmake -B . -S $TRAVIS_BUILD_DIR; else cmake -B . -S $TRAVIS_BUILD_DIR; fi
 
 script:
   - $MAKE all
