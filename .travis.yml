@@ -23,7 +23,7 @@ before_script:
   - cmake --version
   - mkdir build
   - cd build
-  - cmake -B . -S $TRAVIS_BUILD_DIR
+  - if ["$TRAVIS_OS_NAME" = "windows" ]; then cmd -c cmake -B . -S $TRAVIS_BUILD_DIR; else cmake -B . -S $TRAVIS_BUILD_DIR; fi
 
 script:
   - $MAKE all
