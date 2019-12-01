@@ -4,25 +4,25 @@ matrix:
     - name: "Windows gcc C"
       os: windows
       compiler: gcc
-      env: MAKE="mingw32-make.exe"
+      env: MAKE="mingw32-make.exe" GEN="MinGW Makefiles"
     - name: "Windows clang C"
       os: windows
       compiler: clang
-      env: MAKE="mingw32-make.exe"
+      env: MAKE="mingw32-make.exe" GEN="MinGW Makefiles"
     - name: "Linux gcc C"
       os: linux
       compiler: gcc
-      env: MAKE="make"
+      env: MAKE="make" GEN="Unix Makefiles"
     - name: "Linux clang C"
       os: linux
       compiler: clang
-      env: MAKE="make"
+      env: MAKE="make" GEN="Unix Makefiles"
 
 before_script:
   - cmake --version
   - mkdir build
   - cd build
-  - cmake -B . -S $TRAVIS_BUILD_DIR -G "Unix Makefiles"
+  - cmake -B . -S $TRAVIS_BUILD_DIR -G $GEN
 
 script:
   - $MAKE all
