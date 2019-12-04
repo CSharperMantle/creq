@@ -1,7 +1,10 @@
 {
-    "C_Cpp.default.configurationProvider": "vector-of-bool.cmake-tools",
     "files.associations": {
-        "creq.h": "c"
+        "creq.h": "c",
+        "stdarg.h": "c",
+        "string.h": "c",
+        "stdlib.h": "c",
+        "stdio.h": "c"
     },
     "cSpell.words": [
         "creq"
