@@ -231,6 +231,7 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header(creq_HeaderLListNode_
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This procedure directly operates on the given node pointer.
+ * @attention For internal use only.
  */
 CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_delist_header_direct(creq_HeaderLListNode_t **head, creq_HeaderLListNode_t *node);
 
@@ -256,7 +257,7 @@ CREQ_PUBLIC(creq_Request_t *) creq_Request_create(creq_Config_t *conf);
 /**
  * @brief Frees a previously-created creq_Request object.
  *  @see creq_Request
- *  @see creq_create_request
+ *  @see creq_Request_create
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
@@ -340,6 +341,27 @@ CREQ_PUBLIC(char *) creq_Request_get_message_body(creq_Request_t *req);
  * @attention This procedure will return a NEWLY MALLOC'ED string. Creq will not store it. It's the caller's responsibility to deal with it and free it.
  */
 CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req);
+
+/**
+ * @brief Creates a new creq_Response object.
+ *  @see creq_Response
+ * @return A pointer to the newly created creq_Response object.
+ *  @retval NULL Fails to create a new object.
+ * @attention Always use creq_Response_free when done.
+ *  @see creq_Response_free
+ */
+CREQ_PUBLIC(creq_Response_t *) creq_Response_create(creq_Config_t *conf);
+
+/**
+ * @brief Frees a previously-created creq_Response object.
+ *  @see creq_Response
+ *  @see creq_Response_create
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure frees all the resources used in the given object, including all the items in the headers list. So make sure they are malloc'ed!
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_free(creq_Response_t *resp);
 
 #ifdef __cplusplus
 }
