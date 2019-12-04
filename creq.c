@@ -107,21 +107,21 @@ CREQ_PRIVATE(const char *) _creq_get_http_method_str(creq_HttpMethod_t meth)
 {
     switch (meth)
     {
-    case GET:
+    case METH_GET:
         return "GET";
-    case HEAD:
+    case METH_HEAD:
         return "HEAD";
-    case POST:
+    case METH_POST:
         return "POST";
-    case PUT:
+    case METH_PUT:
         return "PUT";
-    case DELETE:
+    case METH_DELETE:
         return "DELETE";
-    case CONNECT:
+    case METH_CONNECT:
         return "CONNECT";
-    case OPTIONS:
+    case METH_OPTIONS:
         return "OPTIONS";
-    case TRACE:
+    case METH_TRACE:
         return "TRACE";
     default:
         return NULL;
@@ -264,7 +264,7 @@ CREQ_PUBLIC(creq_Request_t *) creq_Request_create(creq_Config_t *conf)
         config.data.request_config.line_ending = LE_CRLF;
         pRequest->config = config;
     }
-    pRequest->method = _UNKNOWN;
+    pRequest->method = _METH_UNKNOWN;
     pRequest->request_target = NULL;
     pRequest->http_version.major = 0;
     pRequest->http_version.minor = 0;
@@ -318,7 +318,7 @@ CREQ_PUBLIC(creq_HttpMethod_t) creq_Request_get_http_method(creq_Request_t *req)
 {
     if (req == NULL)
     {
-        return _UNKNOWN;
+        return _METH_UNKNOWN;
     }
     return req->method;
 }
@@ -477,3 +477,60 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
 
     return full_req_s;
 }
+
+CREQ_PUBLIC(creq_Response_t *) creq_Response_create(creq_Config_t *conf)
+{
+    creq_Response_t *pResponse = (creq_Response_t *)_creq_malloc_n_init(sizeof(struct creq_Response));
+
+    if (conf != NULL && conf->config_type == CONF_RESPONSE)
+    {
+        pResponse->config = *conf;
+    }
+    else
+    {
+        creq_Config_t config;
+        config.config_type = CONF_RESPONSE;
+        config.data.response_config.line_ending = LE_CRLF;
+        pResponse->config = config;
+    }
+    
+    pResponse->http_version.major = 0;
+    pResponse->http_version.minor = 0;
+    pResponse->status_code = 0;
+    pResponse->reason_phrase = NULL;
+    pResponse->message_body = NULL;
+    pResponse->list_head = NULL;
+
+    return pResponse;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_free(creq_Response_t *res)
+{
+    if (res != NULL)
+    {
+        // free pointer members
+        CREQ_GUARDED_FREE(res->reason_phrase);
+        CREQ_GUARDED_FREE(res->message_body);
+        // free linked list
+        creq_HeaderLListNode_t *pNodeCursor = res->list_head;
+        if (pNodeCursor != NULL)
+        {
+            while (pNodeCursor->next != NULL) // find the last element
+            {
+                pNodeCursor = pNodeCursor->next;
+            }
+            while (pNodeCursor != NULL)
+            {
+                creq_HeaderLListNode_delist_header_direct(&res->list_head, pNodeCursor);
+                creq_HeaderLListNode_t *pPrev = pNodeCursor->prev;
+                creq_HeaderLListNode_free(pNodeCursor);
+                pNodeCursor = pPrev;
+            }
+        }
+        // finally
+        free(res);
+        return CREQ_STATUS_SUCC;
+    }
+    return CREQ_STATUS_FAILED;
+}
+

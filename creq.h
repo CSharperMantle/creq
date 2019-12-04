@@ -75,15 +75,15 @@ typedef enum creq_LineEnding_e
 
 typedef enum creq_HttpMethod_e
 {
-    GET,
-    HEAD,
-    POST,
-    PUT,
-    DELETE,
-    CONNECT,
-    OPTIONS,
-    TRACE,
-    _UNKNOWN
+    METH_GET,
+    METH_HEAD,
+    METH_POST,
+    METH_PUT,
+    METH_DELETE,
+    METH_CONNECT,
+    METH_OPTIONS,
+    METH_TRACE,
+    _METH_UNKNOWN
 } creq_HttpMethod_t;
 
 typedef enum creq_ConfigType_e
