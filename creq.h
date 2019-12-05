@@ -301,7 +301,7 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, const ch
 CREQ_PUBLIC(char *) creq_Request_get_target(creq_Request_t *req);
 
 /**
- * @brief Set the http version of the creq_Request object.
+ * @brief Set the creq_Request object's http version.
  *  @see creq_Request::http_version
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
@@ -310,7 +310,7 @@ CREQ_PUBLIC(char *) creq_Request_get_target(creq_Request_t *req);
 CREQ_PUBLIC(creq_status_t) creq_Request_set_http_version(creq_Request_t *req, int major, int minor);
 
 /**
- * @brief Get the http version of the creq_Request object.
+ * @brief Get the creq_Request object's http version.
  * @retval The object which contains the version.
  */
 CREQ_PUBLIC(creq_HttpVersion_t) creq_Request_get_http_version(creq_Request_t *req);
@@ -318,7 +318,7 @@ CREQ_PUBLIC(creq_HttpVersion_t) creq_Request_get_http_version(creq_Request_t *re
 /**
  * @brief Set the creq_Request object's message body to the given string.
  *  @see creq_Request::message_body
- * @param requestTarget The pointer to the new message. NULL will clear the message.
+ * @param msg The pointer to the new message. NULL will clear the message.
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
@@ -329,7 +329,7 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, co
 /**
  * @brief Get the creq_Request object's message body.
  * @return The pointer to the message body string.
- *  @retval NULL Message body not defined or bad argument given.
+ *  @retval NULL Message body not set or bad argument given.
  * @attention The returned pointer points to the internal object. DO NOT MODIFY IT.
  */
 CREQ_PUBLIC(char *) creq_Request_get_message_body(creq_Request_t *req);
@@ -337,7 +337,7 @@ CREQ_PUBLIC(char *) creq_Request_get_message_body(creq_Request_t *req);
 /**
  * @brief Create the full request text using the given creq_Request object.
  * @return A pointer to the newly created request string.
- *  @retval NULL Some fields undefined or invalid.
+ *  @retval NULL Some of the fields unset or invalid.
  * @attention This procedure will return a NEWLY MALLOC'ED string. Creq will not store it. It's the caller's responsibility to deal with it and free it.
  */
 CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req);
@@ -364,13 +364,79 @@ CREQ_PUBLIC(creq_Response_t *) creq_Response_create(creq_Config_t *conf);
 CREQ_PUBLIC(creq_status_t) creq_Response_free(creq_Response_t *resp);
 
 /**
- * @brief
+ * @brief Set the creq_Response object's http version.
+ *  @see creq_Response::http_version
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
  */
-CREQ_PUBLIC(creq_status_t) creq_Response_set_status_code_reason_phrase(creq_Response_t *resp, int status, char *reason);
+CREQ_PUBLIC(creq_status_t) creq_Response_set_http_version(creq_Response_t *resp, int major, int minor);
 
+/**
+ * @brief Get the creq_Response object's http version.
+ * @retval The object which contains the version.
+ */
+CREQ_PUBLIC(creq_HttpVersion_t) creq_Response_get_http_version(creq_Response_t *resp);
+
+/**
+ * @brief Set the creq_Response object's status code field to a given value.
+ *  @see creq_Response::status_code
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_set_status_code(creq_Response_t *resp, int status);
+
+/**
+ * @brief Set the creq_Response object's status reason phrase to a given value.
+ *  @see creq_Response::reason_phrase
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure stores a copy of the given string.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_set_reason_phrase(creq_Response_t *resp, char *reason);
+
+/**
+ * @brief Get the creq_Response object's status code.
+ * @return The previously set status code or 0.
+ *  @retval 0 The status code has not been set yet.
+ */
 CREQ_PUBLIC(int) creq_Response_get_status_code(creq_Response_t *resp);
 
+/**
+ * @brief Get the creq_Response object's reason phrase.
+ * @return A pointer to the reason phrase.
+ *  @retval NULL Reason phrase not set or bad argument given.
+ */
 CREQ_PUBLIC(char *) creq_Response_get_reason_phrase(creq_Response_t *resp);
+
+/**
+ * @brief Set the creq_Response object's message body to the given string.
+ *  @see creq_Response::message_body
+ * @param msg The pointer to the new message. NULL will clear the message.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure stores a copy of the given string.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body(creq_Response_t *resp, char *msg);
+
+/**
+ * @brief Get the creq_Response object's message body.
+ * @return The pointer to the message body string.
+ *  @retval NULL Message body not set or bad argument given.
+ * @attention The returned pointer points to the internal object. DO NOT MODIFY IT.
+ */
+CREQ_PUBLIC(char *) creq_Response_get_message_body(creq_Response_t *resp);
+
+/**
+ * @brief Create the full request text using the given creq_Response object.
+ * @return A pointer to the newly created request string.
+ *  @retval NULL Some of the fields unset or invalid.
+ * @attention This procedure will return a NEWLY MALLOC'ED string. Creq will not store it. It's the caller's responsibility to deal with it and free it.
+ */
+CREQ_PUBLIC(char *) creq_Response_stringify(creq_Response_t *resp);
 #ifdef __cplusplus
 }
 #endif // __cplusplus
