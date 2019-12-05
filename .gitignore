@@ -22,5 +22,4 @@ build
 !.vscode/launch.json
 !.vscode/extensions.json
 
-
-!.vscode/creq_snippet.code_snippets
+!.vscode/*.code-snippets
