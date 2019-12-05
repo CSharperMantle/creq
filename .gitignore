@@ -21,3 +21,6 @@ build
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+
+!.vscode/creq_snippet.code_snippets

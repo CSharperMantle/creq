@@ -363,6 +363,14 @@ CREQ_PUBLIC(creq_Response_t *) creq_Response_create(creq_Config_t *conf);
  */
 CREQ_PUBLIC(creq_status_t) creq_Response_free(creq_Response_t *resp);
 
+/**
+ * @brief
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_set_status_code_reason_phrase(creq_Response_t *resp, int status, char *reason);
+
+CREQ_PUBLIC(int) creq_Response_get_status_code(creq_Response_t *resp);
+
+CREQ_PUBLIC(char *) creq_Response_get_reason_phrase(creq_Response_t *resp);
 #ifdef __cplusplus
 }
 #endif // __cplusplus
