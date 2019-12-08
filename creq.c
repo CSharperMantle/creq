@@ -157,7 +157,8 @@ CREQ_PRIVATE(char *) _creq_get_http_version_str(int major, int minor)
     return str;
 }
 
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(const char *header, const char *value)
+
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(char *header, char *value)
 {
     if (header == NULL || value == NULL) // guarded
     {
@@ -167,7 +168,27 @@ CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(const char *he
 
     creq_HeaderField_t *pField = (creq_HeaderField_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderField));
     pField->field_name = _creq_malloc_strcpy(header);
+    pField->is_field_name_literal = false;
     pField->field_value = _creq_malloc_strcpy(value);
+    pField->is_field_value_literal = false;
+
+    pNode->data = pField;
+    return pNode;
+}
+
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create_literal(const char *header_s, const char *value_s)
+{
+    if (header_s == NULL || value_s == NULL) // guarded
+    {
+        return NULL;
+    }
+    creq_HeaderLListNode_t *pNode = (creq_HeaderLListNode_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderLListNode));
+
+    creq_HeaderField_t *pField = (creq_HeaderField_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderField));
+    pField->field_name = header_s;
+    pField->is_field_name_literal = true;
+    pField->field_value = value_s;
+    pField->is_field_value_literal = true;
 
     pNode->data = pField;
     return pNode;
@@ -181,8 +202,10 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_free(creq_HeaderLListNode_t *nod
     }
     creq_HeaderField_t *pField = node->data;
 
-    CREQ_GUARDED_FREE(pField->field_name);
-    CREQ_GUARDED_FREE(pField->field_value);
+    if (!pField->is_field_name_literal)
+        CREQ_GUARDED_FREE(pField->field_name);
+    if (!pField->is_field_value_literal)
+        CREQ_GUARDED_FREE(pField->field_value);
 
     CREQ_GUARDED_FREE(pField);
     node->data = NULL;
@@ -192,7 +215,7 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_free(creq_HeaderLListNode_t *nod
     return CREQ_STATUS_SUCC;
 }
 
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, const char *header)
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, char *header)
 {
     if (header == NULL)
     {
@@ -208,12 +231,35 @@ CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(cre
     return pCursor;
 }
 
-CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, const char *header, const char *value)
+CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, char *header, char *value)
 {
     if (head == NULL || header == NULL || value == NULL) // guarded
         return CREQ_STATUS_FAILED;
 
     creq_HeaderLListNode_t *pNewNode = creq_HeaderLListNode_create(header, value);
+    if (*head == NULL) // first element?
+    {
+        *head = pNewNode;
+        return CREQ_STATUS_SUCC;
+    }
+    // not the first element
+    creq_HeaderLListNode_t *pNodeCursor = *head;
+    while (pNodeCursor->next != NULL) // find the last element
+    {
+        pNodeCursor = pNodeCursor->next;
+    }
+    pNodeCursor->next = pNewNode;
+    pNewNode->prev = pNodeCursor;
+
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header_literal(creq_HeaderLListNode_t **head, const char *header_s, const char *value_s)
+{
+    if (head == NULL || header_s == NULL || value_s == NULL) // guarded
+        return CREQ_STATUS_FAILED;
+
+    creq_HeaderLListNode_t *pNewNode = creq_HeaderLListNode_create_literal(header_s, value_s);
     if (*head == NULL) // first element?
     {
         *head = pNewNode;
@@ -252,7 +298,7 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_delist_header_direct(creq_Header
     return CREQ_STATUS_SUCC;
 }
 
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, const char *header)
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, char *header)
 {
     if (head == NULL || header == NULL)
     {
@@ -299,8 +345,10 @@ CREQ_PUBLIC(creq_status_t) creq_Request_free(creq_Request_t *req)
     if (req != NULL)
     {
         // free pointer members
-        CREQ_GUARDED_FREE(req->request_target);
-        CREQ_GUARDED_FREE(req->message_body);
+        if (!req->is_request_target_literal)
+            CREQ_GUARDED_FREE(req->request_target);
+        if (!req->is_message_body_literal)
+            CREQ_GUARDED_FREE(req->message_body);
         // free linked list
         creq_HeaderLListNode_t *pNodeCursor = req->list_head;
         if (pNodeCursor != NULL)
@@ -343,13 +391,14 @@ CREQ_PUBLIC(creq_HttpMethod_t) creq_Request_get_http_method(creq_Request_t *req)
     return req->method;
 }
 
-CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, const char *requestTarget)
+CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, char *requestTarget)
 {
     if (req == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    CREQ_GUARDED_FREE(req->request_target); // has it been set previously? check it first, free it if necessary...
+    if (!req->is_request_target_literal)
+        CREQ_GUARDED_FREE(req->request_target); // has it been set previously? check it first, free it if necessary... if it is a malloc'ed string then free it.
     if (requestTarget == NULL) // user requests to clear
     {
         req->request_target = NULL;
@@ -358,6 +407,25 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, const ch
     // ...and then do what we are supposed to do :D
     char *pReqTargetCopy = _creq_malloc_strcpy(requestTarget);
     req->request_target = pReqTargetCopy;
+    req->is_request_target_literal = false; // this is not a immediate literal.
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Request_set_target_literal(creq_Request_t *req, const char *requestTarget_s)
+{
+    if (req == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    if (!req->is_request_target_literal)
+        CREQ_GUARDED_FREE(req->request_target); // if it is a malloc'ed string then free it.
+    if (requestTarget_s == NULL)
+    {
+        req->request_target = NULL;
+        return CREQ_STATUS_SUCC;
+    }
+    req->request_target = requestTarget_s; // this is a immediate literal value, store it.
+    req->is_request_target_literal = true;
     return CREQ_STATUS_SUCC;
 }
 
@@ -395,13 +463,14 @@ CREQ_PUBLIC(creq_HttpVersion_t) creq_Request_get_http_version(creq_Request_t *re
     return obj;
 }
 
-CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, const char *msg)
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, char *msg)
 {
     if (req == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    CREQ_GUARDED_FREE(req->message_body);
+    if (!req->is_message_body_literal)
+        CREQ_GUARDED_FREE(req->message_body);
     if (msg == NULL)
     {
         req->message_body = NULL;
@@ -409,6 +478,25 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, co
     }
     char *pMsgCopy = _creq_malloc_strcpy(msg);
     req->message_body = pMsgCopy;
+    req->is_message_body_literal = false;
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_literal(creq_Request_t *req, const char *msg_s)
+{
+    if (req == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    if (!req->is_message_body_literal)
+        CREQ_GUARDED_FREE(req->message_body);
+    if (msg_s == NULL)
+    {
+        req->message_body = NULL;
+        return CREQ_STATUS_SUCC;
+    }
+    req->message_body = msg_s;
+    req->is_message_body_literal = true;
     return CREQ_STATUS_SUCC;
 }
 

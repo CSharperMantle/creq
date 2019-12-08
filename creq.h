@@ -66,6 +66,8 @@ typedef int creq_status_t;
 
 #define CREQ_GUARDED_FREE(ptr) if (ptr != NULL) { free(ptr); ptr = NULL; }
 
+#include <stdbool.h>
+
 typedef enum creq_LineEnding_e
 {
     LE_CR,
@@ -98,7 +100,9 @@ typedef enum creq_ConfigType_e
 typedef struct creq_HeaderField
 {
     char *field_name;
+    bool is_field_name_literal;
     char *field_value;
+    bool is_field_value_literal;
 } creq_HeaderField_t;
 
 /**
@@ -147,6 +151,7 @@ typedef struct creq_Request
     creq_HttpMethod_t method;
     // space
     char *request_target;
+    bool is_request_target_literal;
     // space
     creq_HttpVersion_t http_version;
     // space
@@ -158,6 +163,7 @@ typedef struct creq_Request
     // line ending again in the end
 
     char *message_body;
+    bool is_message_body_literal;
 } creq_Request_t;
 
 /**
@@ -175,6 +181,7 @@ typedef struct creq_Response
     int status_code;
     // space
     char *reason_phrase;
+    bool is_reason_phrase_literal;
     // line ending
 
     // > header field
@@ -183,6 +190,7 @@ typedef struct creq_Response
     // line ending again in the end
 
     char *message_body;
+    bool is_message_body_literal;
 } creq_Response_t;
 
 /**
@@ -194,7 +202,19 @@ typedef struct creq_Response
  * @attention DO NOT directly free the node unless it's not inserted into the list.
  * @attention For internal use only.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(const char *header, const char *value);
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(char *header, char *value);
+
+/**
+ * @brief Creates a new header list node which contains a header-value pair with literal header and value.
+ *  @see creq_HeaderLListNode
+ *  @see creq_HeaderField
+ * @return A pointer to the newly created node.
+ *  @retval NULL Fails to create a new object.
+ * @attention DO NOT directly free the node unless it's not inserted into the list.
+ * @attention For internal use only.
+ * @attention Behaviour will be undefined if non-literals are given.
+ */
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create_literal(const char *header_s, const char *value_s);
 
 /**
  * @brief Frees a previously-created HeaderLListNode.
@@ -215,7 +235,7 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_free(creq_HeaderLListNode_t *nod
  *  @retval NULL Header not found.
  * @attention Always return the first one when there are multiple occurrences.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, const char *header);
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, char *header);
 
 /**
  * @brief Adds a new item to the tail of the given list.
@@ -223,7 +243,16 @@ CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(cre
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  */
-CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, const char *header, const char *value);
+CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, char *header, char *value);
+
+/**
+ * @brief Adds a new item with literal header and value to the tail of the given list.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This function works with literal header and values. If non-literals are given, the result is undefined.
+ */
+CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header_literal(creq_HeaderLListNode_t **head, const char *header_s, const char *value_s);
 
 /**
  * @brief Moves a header node out of the list.
@@ -242,7 +271,7 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_delist_header_direct(creq_Header
  *  @retval NULL Header not found.
  * @attention Always delete the first header found in the list. To delete multiple header-value pairs, call this procedure iteratively until NULL is returned.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, const char *header);
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, char *header);
 
 /**
  * @brief Creates a new creq_Request object.
@@ -290,7 +319,18 @@ CREQ_PUBLIC(creq_HttpMethod_t) creq_Request_get_http_method(creq_Request_t *req)
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This procedure stores a copy of the given string.
  */
-CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, const char *requestTarget);
+CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, char *requestTarget);
+
+/**
+ * @brief Set the creq_Request object's target to the given literal.
+ *  @see creq_Request::request_target
+ * @param requestTarget The pointer to the new target. NULL will clear the target.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure stores the pointer to the literal directly. Behaviour will be undefined if non-literals are given.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Request_set_target_literal(creq_Request_t *req, const char *requestTarget_s);
 
 /**
  * @brief Get the creq_Request object's target
@@ -324,7 +364,18 @@ CREQ_PUBLIC(creq_HttpVersion_t) creq_Request_get_http_version(creq_Request_t *re
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This procedure stores a copy of the given string.
  */
-CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, const char *msg);
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, char *msg);
+
+/**
+ * @brief Set the creq_Request object's message body to the given literal.
+ *  @see creq_Request::message_body
+ * @param msg The pointer to the new message. NULL will clear the message.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure stores the pointer to the literal directly. Behaviour will be undefined if non-literals are given.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_literal(creq_Request_t *req, const char *msg);
 
 /**
  * @brief Get the creq_Request object's message body.

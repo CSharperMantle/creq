@@ -5,7 +5,8 @@
         "string.h": "c",
         "stdlib.h": "c",
         "stdio.h": "c",
-        "_mingw_print_push.h": "c"
+        "_mingw_print_push.h": "c",
+        "type_traits": "c"
     },
     "cSpell.words": [
         "creq",
