@@ -4,6 +4,7 @@
  * @author CSharperMantle
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -331,10 +332,12 @@ CREQ_PUBLIC(creq_Request_t *) creq_Request_create(creq_Config_t *conf)
         pRequest->config = config;
     }
     pRequest->method = _METH_UNKNOWN;
+    pRequest->is_request_target_literal = false;
     pRequest->request_target = NULL;
     pRequest->http_version.major = 0;
     pRequest->http_version.minor = 0;
     pRequest->list_head = NULL;
+    pRequest->is_message_body_literal = false;
     pRequest->message_body = NULL;
 
     return pRequest;
@@ -606,21 +609,25 @@ CREQ_PUBLIC(creq_Response_t *) creq_Response_create(creq_Config_t *conf)
     pResponse->http_version.minor = 0;
     pResponse->status_code = 0;
     pResponse->reason_phrase = NULL;
+    pResponse->is_reason_phrase_literal = false;
     pResponse->message_body = NULL;
+    pResponse->is_message_body_literal = false;
     pResponse->list_head = NULL;
 
     return pResponse;
 }
 
-CREQ_PUBLIC(creq_status_t) creq_Response_free(creq_Response_t *res)
+CREQ_PUBLIC(creq_status_t) creq_Response_free(creq_Response_t *resp)
 {
-    if (res != NULL)
+    if (resp != NULL)
     {
         // free pointer members
-        CREQ_GUARDED_FREE(res->reason_phrase);
-        CREQ_GUARDED_FREE(res->message_body);
+        if (!resp->is_reason_phrase_literal)
+            CREQ_GUARDED_FREE(resp->reason_phrase);
+        if (!resp->is_message_body_literal)
+            CREQ_GUARDED_FREE(resp->message_body);
         // free linked list
-        creq_HeaderLListNode_t *pNodeCursor = res->list_head;
+        creq_HeaderLListNode_t *pNodeCursor = resp->list_head;
         if (pNodeCursor != NULL)
         {
             while (pNodeCursor->next != NULL) // find the last element
@@ -629,14 +636,14 @@ CREQ_PUBLIC(creq_status_t) creq_Response_free(creq_Response_t *res)
             }
             while (pNodeCursor != NULL)
             {
-                creq_HeaderLListNode_delist_header_direct(&res->list_head, pNodeCursor);
+                creq_HeaderLListNode_delist_header_direct(&resp->list_head, pNodeCursor);
                 creq_HeaderLListNode_t *pPrev = pNodeCursor->prev;
                 creq_HeaderLListNode_free(pNodeCursor);
                 pNodeCursor = pPrev;
             }
         }
         // finally
-        free(res);
+        free(resp);
         return CREQ_STATUS_SUCC;
     }
     return CREQ_STATUS_FAILED;
@@ -681,7 +688,8 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_reason_phrase(creq_Response_t *resp
     {
         return CREQ_STATUS_FAILED;
     }
-    CREQ_GUARDED_FREE(resp->reason_phrase);
+    if (!resp->is_reason_phrase_literal)
+        CREQ_GUARDED_FREE(resp->reason_phrase);
     if (reason == NULL)
     {
         resp->reason_phrase = NULL;
@@ -689,6 +697,25 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_reason_phrase(creq_Response_t *resp
     }
     char *pReasonCopy = _creq_malloc_strcpy(reason);
     resp->reason_phrase = pReasonCopy;
+    resp->is_reason_phrase_literal = false;
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_set_reason_phrase_literal(creq_Response_t *resp, const char *reason_s)
+{
+    if (resp == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    if (!resp->is_reason_phrase_literal)
+        CREQ_GUARDED_FREE(resp->reason_phrase);
+    if (reason_s == NULL)
+    {
+        resp->reason_phrase = NULL;
+        return CREQ_STATUS_SUCC;
+    }
+    resp->reason_phrase = reason_s;
+    resp->is_reason_phrase_literal = true;
     return CREQ_STATUS_SUCC;
 }
 
@@ -712,7 +739,8 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body(creq_Response_t *resp,
     {
         return CREQ_STATUS_FAILED;
     }
-    CREQ_GUARDED_FREE(resp->message_body);
+    if (!resp->is_message_body_literal)
+        CREQ_GUARDED_FREE(resp->message_body);
     if (msg == NULL)
     {
         resp->message_body = NULL;
@@ -720,6 +748,25 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body(creq_Response_t *resp,
     }
     char *pMsgCopy = _creq_malloc_strcpy(msg);
     resp->message_body = pMsgCopy;
+    resp->is_message_body_literal = false;
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_literal(creq_Response_t *resp, const char *msg_s)
+{
+    if (resp == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    if (!resp->is_message_body_literal)
+        CREQ_GUARDED_FREE(resp->message_body);
+    if (msg_s == NULL)
+    {
+        resp->message_body = NULL;
+        return CREQ_STATUS_SUCC;
+    }
+    resp->message_body = msg_s;
+    resp->is_message_body_literal = true;
     return CREQ_STATUS_SUCC;
 }
 

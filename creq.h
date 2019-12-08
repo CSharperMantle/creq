@@ -439,7 +439,7 @@ CREQ_PUBLIC(creq_HttpVersion_t) creq_Response_get_http_version(creq_Response_t *
 CREQ_PUBLIC(creq_status_t) creq_Response_set_status_code(creq_Response_t *resp, int status);
 
 /**
- * @brief Set the creq_Response object's status reason phrase to a given value.
+ * @brief Set the creq_Response object's reason phrase to a given value.
  *  @see creq_Response::reason_phrase
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
@@ -447,6 +447,16 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_status_code(creq_Response_t *resp, 
  * @attention This procedure stores a copy of the given string.
  */
 CREQ_PUBLIC(creq_status_t) creq_Response_set_reason_phrase(creq_Response_t *resp, char *reason);
+
+/**
+ * @brief Set the creq_Response object's reason phrase to a given literal.
+ *  @see creq_Response::reason_phrase
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure stores the pointer to the literal directly. Behaviour will be undefined if non-literals are given.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_set_reason_phrase_literal(creq_Response_t *resp, const char *reason_s);
 
 /**
  * @brief Get the creq_Response object's status code.
@@ -472,6 +482,17 @@ CREQ_PUBLIC(char *) creq_Response_get_reason_phrase(creq_Response_t *resp);
  * @attention This procedure stores a copy of the given string.
  */
 CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body(creq_Response_t *resp, char *msg);
+
+/**
+ * @brief Set the creq_Response object's message body to the given literal.
+ *  @see creq_Response::message_body
+ * @param msg The pointer to the new message. NULL will clear the message.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure stores the pointer to the literal directly. Behaviour will be undefined if non-literals are given.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_literal(creq_Response_t *resp, const char *msg_s);
 
 /**
  * @brief Get the creq_Response object's message body.
