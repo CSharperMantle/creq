@@ -23,11 +23,11 @@
 
 /*
  * RFC 7230
- * status-line = HTTP-version SP status-code SP reason-phrase CRLF
+ * request-line = method SP request-target SP HTTP-version CRLF
  * 
  * $(method) /target/path HTTP/1.1 line_ending(\r, \n || \r\n)
  */
-CREQ_PRIVATE(const char *) _creq_FMT_REQUEST_STATUS_LINE = "%s %s %s%s";
+CREQ_PRIVATE(const char *) _creq_FMT_REQUEST_LINE = "%s %s %s%s";
 
 /*
  * RFC 7230
@@ -53,12 +53,32 @@ CREQ_PRIVATE(const char *) _creq_FMT_HEADER = "%s: %s%s";
  *                  CRLF
  *                  [ message-body ]
  * 
- * REQUEST_STATUS_LINE(with line_ending)
+ * REQUEST_LINE(with line_ending)
  * HEADER(with line_ending)
  * line_ending
  * BODY
  */
 CREQ_PRIVATE(const char *) _creq_FMT_FULL_REQUEST = "%s%s%s%s";
+
+/*
+ * RFC 7320
+ * status-line = HTTP-version SP status-code SP reason-phrase CRLF
+ */
+CREQ_PRIVATE(const char *) _creq_FMT_STATUS_LINE = "%s %d %s%s";
+
+/*
+ * RFC 7230
+ * HTTP-message   = start-line
+ *                  *( header-field CRLF )
+ *                  CRLF
+ *                  [ message-body ]
+ * 
+ * STATUS_LINE(with line_ending)
+ * HEADER(with line_ending)
+ * line_ending
+ * BODY
+ */
+CREQ_PRIVATE(const char *) _creq_FMT_FULL_RESPONSE = "%s%s%s%s";
 
 CREQ_PRIVATE(void *) _creq_malloc_n_init(size_t size)
 {
@@ -407,18 +427,18 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     {
         return NULL;
     }
-    char *status_line_s = NULL, *headers_s = NULL, *body_s = NULL;
+    char *request_line_s = NULL, *headers_s = NULL, *body_s = NULL;
 
     const char *line_ending_s = _creq_get_line_ending_str(&req->config, CONF_REQUEST);
     const char *http_meth_s = _creq_get_http_method_str(req->method);
     char *http_version_s = _creq_get_http_version_str(req->http_version.major, req->http_version.minor);
 
-    int status_line_len = snprintf(NULL, 0, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
-    status_line_s = (char *)_creq_malloc_n_init(sizeof(char) * (status_line_len + 1));
-    snprintf(status_line_s, status_line_len + 1, _creq_FMT_REQUEST_STATUS_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
+    int request_line_len = snprintf(NULL, 0, _creq_FMT_REQUEST_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
+    request_line_s = (char *)_creq_malloc_n_init(sizeof(char) * (request_line_len + 1));
+    snprintf(request_line_s, request_line_len + 1, _creq_FMT_REQUEST_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
     CREQ_GUARDED_FREE(http_version_s);
 
-    // we now have a status_line_s string. Others are garbage now, except for line_ending_s
+    // we now have a request_line_s string. Others are garbage now, except for line_ending_s
 
     // walk the linked list
     size_t header_list_len = 0;
@@ -460,19 +480,19 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req)
     body_s = req->message_body;
 
     char *full_req_s = NULL;
-    int full_len = snprintf(NULL, 0, _creq_FMT_FULL_REQUEST,
-                                status_line_s,
+    int full_req_len = snprintf(NULL, 0, _creq_FMT_FULL_REQUEST,
+                                request_line_s,
                                 headers_s == NULL ? line_ending_s : headers_s,
                                 line_ending_s,
                                 body_s == NULL ? "" : body_s);
-    full_req_s = (char *)_creq_malloc_n_init(sizeof(char) * (full_len + 1));
-    snprintf(full_req_s, full_len + 1, _creq_FMT_FULL_REQUEST,
-             status_line_s,
+    full_req_s = (char *)_creq_malloc_n_init(sizeof(char) * (full_req_len + 1));
+    snprintf(full_req_s, full_req_len + 1, _creq_FMT_FULL_REQUEST,
+             request_line_s,
              headers_s == NULL ? line_ending_s : headers_s,
              line_ending_s,
              body_s == NULL ? "" : body_s);
 
-    CREQ_GUARDED_FREE(status_line_s);
+    CREQ_GUARDED_FREE(request_line_s);
     CREQ_GUARDED_FREE(headers_s);
 
     return full_req_s;
@@ -534,3 +554,161 @@ CREQ_PUBLIC(creq_status_t) creq_Response_free(creq_Response_t *res)
     return CREQ_STATUS_FAILED;
 }
 
+CREQ_PUBLIC(creq_status_t) creq_Response_set_http_version(creq_Response_t *resp, int major, int minor)
+{
+    if (resp == NULL)
+        return CREQ_STATUS_FAILED;
+
+    resp->http_version.major = major;
+    resp->http_version.minor = minor;
+
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_HttpVersion_t) creq_Response_get_http_version(creq_Response_t *resp)
+{
+    creq_HttpVersion_t obj;
+    obj.major = -1;
+    obj.minor = -1;
+    if (resp == NULL)
+    {
+        return obj;
+    }
+    obj.major = resp->http_version.major;
+    obj.minor = resp->http_version.minor;
+    return obj;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_set_status_code(creq_Response_t *resp, int status)
+{
+    if (resp == NULL)
+        return CREQ_STATUS_FAILED;
+    resp->status_code = status;
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_set_reason_phrase(creq_Response_t *resp, char *reason)
+{
+    if (resp == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    CREQ_GUARDED_FREE(resp->reason_phrase);
+    if (reason == NULL)
+    {
+        resp->reason_phrase = NULL;
+        return CREQ_STATUS_SUCC;
+    }
+    char *pReasonCopy = _creq_malloc_strcpy(reason);
+    resp->reason_phrase = pReasonCopy;
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(int) creq_Response_get_status_code(creq_Response_t *resp)
+{
+    if (resp == NULL)
+        return 0;
+    return resp->status_code;
+}
+
+CREQ_PUBLIC(char *) creq_Response_get_reason_phrase(creq_Response_t *resp)
+{
+    if (resp == NULL)
+        return NULL;
+    return resp->reason_phrase;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body(creq_Response_t *resp, char *msg)
+{
+    if (resp == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    CREQ_GUARDED_FREE(resp->message_body);
+    if (msg == NULL)
+    {
+        resp->message_body = NULL;
+        return CREQ_STATUS_SUCC;
+    }
+    char *pMsgCopy = _creq_malloc_strcpy(msg);
+    resp->message_body = pMsgCopy;
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(char *) creq_Response_get_message_body(creq_Response_t *resp)
+{
+    if (resp == NULL)
+        return NULL;
+    return resp->message_body;
+}
+
+CREQ_PUBLIC(char *) creq_Response_stringify(creq_Response_t *resp)
+{
+    if (resp == NULL)
+        return NULL;
+    char *status_line_s = NULL, *headers_s = NULL, *body_s = NULL;
+
+    const char *line_ending_s = _creq_get_line_ending_str(&resp->config, CONF_RESPONSE);
+    char *http_version_s = _creq_get_http_version_str(resp->http_version.major, resp->http_version.minor);
+
+    int status_line_len = snprintf(NULL, 0, _creq_FMT_STATUS_LINE, http_version_s, resp->status_code, resp->reason_phrase, line_ending_s);
+    status_line_s = (char *)_creq_malloc_n_init(sizeof(char) * (status_line_len + 1));
+    snprintf(status_line_s, status_line_len + 1, _creq_FMT_STATUS_LINE, http_version_s, resp->status_code, resp->reason_phrase, line_ending_s);
+    CREQ_GUARDED_FREE(http_version_s);
+
+    size_t header_list_len = 0;
+    creq_HeaderLListNode_t *cursor = resp->list_head;
+    while (cursor != NULL)
+    {
+        header_list_len ++;
+        cursor = cursor->next;
+    }
+    if (header_list_len != 0)
+    {
+        size_t idx = 0;
+        int str_len = 0;
+        creq_HeaderField_t *fields[header_list_len];
+        cursor = resp->list_head;
+        while (cursor != NULL)
+        {
+            fields[idx] = cursor->data;
+            idx ++;
+            cursor = cursor->next;
+        }
+
+        for (idx = 0; idx < header_list_len; idx ++)
+        {
+            str_len += snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+        }
+        headers_s = (char *)_creq_malloc_n_init(sizeof(char) * (str_len + 1));
+        for (idx = 0; idx < header_list_len; idx ++)
+        {
+            char *str;
+            int len = snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+            str = (char *)_creq_malloc_n_init(sizeof(char) * (len + 1));
+            snprintf(str, len + 1, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+            strcat(headers_s, str);
+            CREQ_GUARDED_FREE(str);
+        }
+    }
+
+    body_s = resp->message_body;
+
+    char *full_resp_s = NULL;
+    int full_resp_len = snprintf(NULL, 0, _creq_FMT_FULL_RESPONSE,
+                                 status_line_s,
+                                 headers_s == NULL ? line_ending_s : headers_s,
+                                 line_ending_s,
+                                 body_s == NULL ? "" : body_s);
+    full_resp_s = (char *)_creq_malloc_n_init(sizeof(char) * (full_resp_len + 1));
+    snprintf(full_resp_s, full_resp_len + 1, _creq_FMT_FULL_RESPONSE,
+             status_line_s,
+             headers_s == NULL ? line_ending_s : headers_s,
+             line_ending_s,
+             body_s == NULL ? "" : body_s);
+
+    CREQ_GUARDED_FREE(status_line_s);
+    CREQ_GUARDED_FREE(headers_s);
+    
+    return full_resp_s;
+}
