@@ -8,7 +8,9 @@
         "_mingw_print_push.h": "c",
         "type_traits": "c",
         "stdexcpt.h": "c",
-        "crtdefs.h": "c"
+        "crtdefs.h": "c",
+        "_mingw_print_pop.h": "c",
+        "stdio_s.h": "c"
     },
     "cSpell.words": [
         "creq",

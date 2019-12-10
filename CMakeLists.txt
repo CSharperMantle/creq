@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(creq VERSION 0.1.3)
+project(creq VERSION 0.1.4)
 
 add_library(creq STATIC creq.c)
 

@@ -233,9 +233,9 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_free(creq_HeaderLListNode_t *nod
  * @brief Search for a header-value pair in the headers list which contains the given header.
  * @return A pointer to the header found.
  *  @retval NULL Header not found.
- * @attention Always return the first one when there are multiple occurrences.
+ * @attention Always return the first one when there are multiple occurrences. To search for multiple header-value pairs, call this procedure iteratively with the last-found header as the head until NULL is returned.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, char *header);
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, const char *header);
 
 /**
  * @brief Adds a new item to the tail of the given list.
@@ -356,6 +356,51 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_http_version(creq_Request_t *req, in
 CREQ_PUBLIC(creq_HttpVersion_t) creq_Request_get_http_version(creq_Request_t *req);
 
 /**
+ * @brief Adds a new item to the tail of the headers list of the creq_Request object.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Request_add_header(creq_Request_t *req, char *header, char *value);
+
+/**
+ * @brief Adds a new item with literal header and value to the tail of the headers list of the creq_Request object.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This function works with literal header and values. If non-literals are given, the result is undefined.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Request_add_header_literal(creq_Request_t *req, const char *header_s, const char *value_s);
+
+/**
+ * @brief Searches for a header-value pair in the headers list of the creq_Request object which contains the given header.
+ * @return A pointer to the header found.
+ *  @retval NULL Header not found.
+ * @attention Always return the first one when there are multiple occurrences. To search for multiple header-value pairs, call this procedure iteratively with the last-found header as the head until NULL is returned.
+ */
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_Request_search_for_header(creq_Request_t *req, char *header);
+
+/**
+ * @brief Moves the header with the given header name out of the creq_Request object's headers list and frees it.
+ *  @see creq_HeaderLListNode_delist_header
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention Always delete the first header found in the list.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Request_remove_header(creq_Request_t *req, char *header);
+
+/**
+ * @brief Moves a header node out of the list of the give creq_Request object and frees it.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure directly operates on the given node pointer. Often used with creq_Request_search_for_header .
+ * @see creq_Request_search_for_header
+ */
+CREQ_PUBLIC(creq_status_t) creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderLListNode_t *node);
+
+/**
  * @brief Set the creq_Request object's message body to the given string.
  *  @see creq_Request::message_body
  * @param msg The pointer to the new message. NULL will clear the message.
@@ -471,6 +516,51 @@ CREQ_PUBLIC(int) creq_Response_get_status_code(creq_Response_t *resp);
  *  @retval NULL Reason phrase not set or bad argument given.
  */
 CREQ_PUBLIC(char *) creq_Response_get_reason_phrase(creq_Response_t *resp);
+
+/**
+ * @brief Adds a new item to the tail of the headers list of the creq_Response object.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_add_header(creq_Response_t *resp, char *header, char *value);
+
+/**
+ * @brief Adds a new item with literal header and value to the tail of the headers list of the creq_Response object.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This function works with literal header and values. If non-literals are given, the result is undefined.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_add_header_literal(creq_Response_t *resp, const char *header_s, const char *value_s);
+
+/**
+ * @brief Searches for a header-value pair in the headers list of the creq_Response object which contains the given header.
+ * @return A pointer to the header found.
+ *  @retval NULL Header not found.
+ * @attention Always return the first one when there are multiple occurrences. To search for multiple header-value pairs, call this procedure iteratively with the last-found header as the head until NULL is returned.
+ */
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_Response_search_for_header(creq_Response_t *resp, char *header);
+
+/**
+ * @brief Moves the header with the given header name out of the creq_Response object's headers list and frees it.
+ *  @see creq_HeaderLListNode_delist_header
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention Always delete the first header found in the list.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_remove_header(creq_Response_t *resp, char *header);
+
+/**
+ * @brief Moves a header node out of the list of the give creq_Response object and frees it.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure directly operates on the given node pointer. Often used with creq_Response_search_for_header .
+ * @see creq_Response_search_for_header
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_remove_header_direct(creq_Response_t *resp, creq_HeaderLListNode_t *node);
 
 /**
  * @brief Set the creq_Response object's message body to the given string.
