@@ -466,6 +466,59 @@ CREQ_PUBLIC(creq_HttpVersion_t) creq_Request_get_http_version(creq_Request_t *re
     return obj;
 }
 
+CREQ_PUBLIC(creq_status_t) creq_Request_add_header(creq_Request_t *req, char *header, char *value)
+{
+    if (req == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    return creq_HeaderLListNode_add_header(&req->list_head, header, value);
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Request_add_header_literal(creq_Request_t *req, const char *header_s, const char *value_s)
+{
+    if (req == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    return creq_HeaderLListNode_add_header_literal(&req->list_head, header_s, value_s);
+}
+
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_Request_search_for_header(creq_Request_t *req, char *header)
+{
+    if (req == NULL)
+    {
+        return NULL;
+    }
+    return creq_HeaderLListNode_search_for_header(req->list_head, header);
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Request_remove_header(creq_Request_t *req, char *header)
+{
+    if (req == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    creq_HeaderLListNode_t *node = creq_HeaderLListNode_delist_header(&req->list_head, header);
+    if (node != NULL)
+    {
+        creq_HeaderLListNode_free(node);
+        return CREQ_STATUS_SUCC;
+    }
+    return CREQ_STATUS_FAILED;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderLListNode_t *node)
+{
+    if (req == NULL || node == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    creq_HeaderLListNode_delist_header_direct(&req->list_head, node);
+    creq_HeaderLListNode_free(node);
+    return CREQ_STATUS_SUCC;
+}
+
 CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, char *msg)
 {
     if (req == NULL)
@@ -731,6 +784,59 @@ CREQ_PUBLIC(char *) creq_Response_get_reason_phrase(creq_Response_t *resp)
     if (resp == NULL)
         return NULL;
     return resp->reason_phrase;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_add_header(creq_Response_t *resp, char *header, char *value)
+{
+    if (resp == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    return creq_HeaderLListNode_add_header(&resp->list_head, header, value);
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_add_header_literal(creq_Response_t *resp, const char *header_s, const char *value_s)
+{
+    if (resp == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    return creq_HeaderLListNode_add_header_literal(&resp->list_head, header_s, value_s);
+}
+
+CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_Response_search_for_header(creq_Response_t *resp, char *header)
+{
+    if (resp == NULL)
+    {
+        return NULL;
+    }
+    return creq_HeaderLListNode_search_for_header(resp->list_head, header);
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_remove_header(creq_Response_t *resp, char *header)
+{
+    if (resp == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    creq_HeaderLListNode_t *node = creq_HeaderLListNode_delist_header(&resp->list_head, header);
+    if (node != NULL)
+    {
+        creq_HeaderLListNode_free(node);
+        return CREQ_STATUS_SUCC;
+    }
+    return CREQ_STATUS_FAILED;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_remove_header_direct(creq_Response_t *resp, creq_HeaderLListNode_t *node)
+{
+    if (resp == NULL || node == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    creq_HeaderLListNode_delist_header_direct(&resp->list_head, node);
+    creq_HeaderLListNode_free(node);
+    return CREQ_STATUS_SUCC;
 }
 
 CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body(creq_Response_t *resp, char *msg)

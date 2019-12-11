@@ -6,7 +6,6 @@
 int main()
 {
     printf("%s\r\n", "NOW PRINTING A GET REQUEST");
-
     creq_Request_t *req = NULL;
     creq_Config_t req_conf;
     req_conf.config_type = CONF_REQUEST;
@@ -15,9 +14,9 @@ int main()
     creq_Request_set_http_method(req, METH_GET);
     creq_Request_set_http_version(req, 1, 1);
     creq_Request_set_target_literal(req, "www.baidu.com");
-    creq_HeaderLListNode_add_header_literal(&req->list_head, "Host", "www.baidu.com");
-    creq_HeaderLListNode_add_header_literal(&req->list_head, "User-Agent", "creq/0.1.1");
-    creq_HeaderLListNode_add_header_literal(&req->list_head, "Connection", "close");
+    creq_Request_add_header_literal(req, "Host", "www.baidu.com");
+    creq_Request_add_header_literal(req, "User-Agent", "creq/0.1.1");
+    creq_Request_add_header_literal(req, "Connection", "close");
     creq_Request_set_message_body_literal(req, "");
     char *req_str = creq_Request_stringify(req);
     printf("%s\r\n", req_str);
@@ -30,9 +29,11 @@ int main()
     creq_Request_set_http_method(req, METH_POST);
     creq_Request_set_http_version(req, 1, 1);
     creq_Request_set_target_literal(req, "www.my-site.com");
-    creq_HeaderLListNode_add_header_literal(&req->list_head, "Host", "www.my-site.com");
-    creq_HeaderLListNode_add_header_literal(&req->list_head, "User-Agent", "creq/0.1.1");
-    creq_HeaderLListNode_add_header_literal(&req->list_head, "Connection", "close");
+    creq_Request_add_header_literal(req, "Host", "www.my-site.com");
+    creq_Request_add_header_literal(req, "User-Agent", "creq/0.1.1");
+    creq_Request_add_header_literal(req, "Connection", "close");
+    creq_Request_add_header_literal(req, "Bogus", "placeholder");
+    creq_Request_remove_header(req, "Bogus");
     creq_Request_set_message_body_literal(req, "user=CSharperMantle&mood=happy");
     req_str = creq_Request_stringify(req);
     printf("%s\r\n", req_str);
@@ -51,9 +52,11 @@ int main()
     creq_Response_set_http_version(resp, 1, 1);
     creq_Response_set_status_code(resp, 200);
     creq_Response_set_reason_phrase(resp, "OK");
-    creq_HeaderLListNode_add_header(&resp->list_head, "Content-Type", "text/plain; charset=utf-8");
-    creq_HeaderLListNode_add_header(&resp->list_head, "Connection", "close");
-    creq_HeaderLListNode_add_header(&resp->list_head, "X-Generated-By", "creq/0.1.1");
+    creq_Response_add_header_literal(resp, "Content-Type", "text/plain; charset=utf-8");
+    creq_Response_add_header_literal(resp, "Connection", "close");
+    creq_Response_add_header_literal(resp, "X-Generated-By", "creq/0.1.1");
+    creq_Response_add_header_literal(resp, "Bogus", "placeholder");
+    creq_Response_remove_header(resp, "Bogus");
     creq_Response_set_message_body(resp, "Hello world!");
     resp_str = creq_Response_stringify(resp);
     printf("%s\r\n", resp_str);

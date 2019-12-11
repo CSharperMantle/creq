@@ -397,6 +397,7 @@ CREQ_PUBLIC(creq_status_t) creq_Request_remove_header(creq_Request_t *req, char 
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This procedure directly operates on the given node pointer. Often used with creq_Request_search_for_header .
  * @see creq_Request_search_for_header
+ * @attention Behaviour will be undefined if the given header is not in the list.
  */
 CREQ_PUBLIC(creq_status_t) creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderLListNode_t *node);
 
@@ -559,6 +560,7 @@ CREQ_PUBLIC(creq_status_t) creq_Response_remove_header(creq_Response_t *resp, ch
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This procedure directly operates on the given node pointer. Often used with creq_Response_search_for_header .
  * @see creq_Response_search_for_header
+ * @attention Behaviour will be undefined if the given header is not in the list.
  */
 CREQ_PUBLIC(creq_status_t) creq_Response_remove_header_direct(creq_Response_t *resp, creq_HeaderLListNode_t *node);
 
