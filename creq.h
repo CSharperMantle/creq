@@ -67,6 +67,7 @@ typedef int creq_status_t;
 #define CREQ_GUARDED_FREE(ptr) if (ptr != NULL) { free(ptr); ptr = NULL; }
 
 #include <stdbool.h>
+#include <wchar.h>
 
 typedef enum creq_LineEnding_e
 {
@@ -164,6 +165,9 @@ typedef struct creq_Request
 
     char *message_body;
     bool is_message_body_literal;
+
+    /// @todo for future verification apis, not used for now
+    bool is_verified;
 } creq_Request_t;
 
 /**
@@ -175,7 +179,6 @@ typedef struct creq_Response
     creq_Config_t config;
 
     // > status-line, Section 3.1.2
-    // > mask value, for example (0101)10 for HTTP/1.1
     creq_HttpVersion_t http_version;
     // space
     int status_code;
@@ -191,6 +194,9 @@ typedef struct creq_Response
 
     char *message_body;
     bool is_message_body_literal;
+
+    /// @todo for future verification apis, not used for now
+    bool is_verified;
 } creq_Response_t;
 
 /**
