@@ -67,6 +67,7 @@ typedef int creq_status_t;
 #define CREQ_GUARDED_FREE(ptr) if (ptr != NULL) { free(ptr); ptr = NULL; }
 
 #include <stdbool.h>
+#include <wchar.h>
 
 typedef enum creq_LineEnding_e
 {
@@ -424,6 +425,26 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, ch
 CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_literal(creq_Request_t *req, const char *msg);
 
 /**
+ * @brief Set the creq_Request object's message body to the given string and update the Content-Length header.
+ *  @see creq_Request_set_message_body
+ * @param msg The pointer to the new message. NULL will clear the message.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg);
+
+/**
+ * @brief Set the creq_Request object's message body to the given literal and update the Content-Length header.
+ *  @see creq_Request_set_message_body_literal
+ * @param msg The pointer to the new message. NULL will clear the message.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_literal_content_len(creq_Request_t *req, const char *msg);
+
+/**
  * @brief Get the creq_Request object's message body.
  * @return The pointer to the message body string.
  *  @retval NULL Message body not set or bad argument given.
@@ -585,6 +606,26 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body(creq_Response_t *resp,
  * @attention This procedure stores the pointer to the literal directly. Behaviour will be undefined if non-literals are given.
  */
 CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_literal(creq_Response_t *resp, const char *msg_s);
+
+/**
+ * @brief Set the creq_Response object's message body to the given string and update the Content-Length header.
+ *  @see creq_Response_set_message_body
+ * @param msg The pointer to the new message. NULL will clear the message.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_content_len(creq_Response_t *resp, char *msg);
+
+/**
+ * @brief Set the creq_Response object's message body to the given literal and update the Content-Length header.
+ *  @see creq_Response_set_message_body_literal
+ * @param msg The pointer to the new message. NULL will clear the message.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ */
+CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_literal_content_len(creq_Response_t *resp, const char *msg);
 
 /**
  * @brief Get the creq_Response object's message body.

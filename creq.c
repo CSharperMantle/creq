@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <wchar.h>
 #include "creq.h"
 
 /*
@@ -538,6 +539,23 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, ch
     return CREQ_STATUS_SUCC;
 }
 
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg)
+{
+    if (creq_Request_set_message_body(req, msg) == CREQ_STATUS_FAILED)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    creq_Request_remove_header(req, "Content-Length");
+    size_t content_len = strlen(req->message_body);
+    char *content_len_s = NULL;
+    int content_len_s_len = snprintf(NULL, 0, "%u", content_len);
+    content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
+    snprintf(content_len_s, content_len_s_len + 1, "%u", content_len);
+    creq_Request_add_header(req, "Content-Length", content_len_s);
+    CREQ_GUARDED_FREE(content_len_s);
+    return CREQ_STATUS_SUCC;
+}
+
 CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_literal(creq_Request_t *req, const char *msg_s)
 {
     if (req == NULL)
@@ -553,6 +571,23 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_literal(creq_Request_t 
     }
     req->message_body = msg_s;
     req->is_message_body_literal = true;
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_literal_content_len(creq_Request_t *req, const char *msg)
+{
+    if (creq_Request_set_message_body_literal(req, msg) == CREQ_STATUS_FAILED)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    creq_Request_remove_header(req, "Content-Length");
+    size_t content_len = strlen(req->message_body);
+    char *content_len_s = NULL;
+    int content_len_s_len = snprintf(NULL, 0, "%u", content_len);
+    content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
+    snprintf(content_len_s, content_len_s_len + 1, "%u", content_len);
+    creq_Request_add_header(req, "Content-Length", content_len_s);
+    CREQ_GUARDED_FREE(content_len_s);
     return CREQ_STATUS_SUCC;
 }
 
@@ -858,6 +893,23 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body(creq_Response_t *resp,
     return CREQ_STATUS_SUCC;
 }
 
+CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_content_len(creq_Response_t *resp, char *msg)
+{
+    if (creq_Response_set_message_body(resp, msg) == CREQ_STATUS_FAILED)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    creq_Response_remove_header(resp, "Content-Length");
+    size_t content_len = strlen(resp->message_body);
+    char *content_len_s = NULL;
+    int content_len_s_len = snprintf(NULL, 0, "%u", content_len);
+    content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
+    snprintf(content_len_s, content_len_s_len + 1, "%u", content_len);
+    creq_Response_add_header(resp, "Content-Length", content_len_s);
+    CREQ_GUARDED_FREE(content_len_s);
+    return CREQ_STATUS_SUCC;
+}
+
 CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_literal(creq_Response_t *resp, const char *msg_s)
 {
     if (resp == NULL)
@@ -873,6 +925,23 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_literal(creq_Response_
     }
     resp->message_body = msg_s;
     resp->is_message_body_literal = true;
+    return CREQ_STATUS_SUCC;
+}
+
+CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_literal_content_len(creq_Response_t *resp, const char *msg)
+{
+    if (creq_Response_set_message_body_literal(resp, msg) == CREQ_STATUS_FAILED)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    creq_Response_remove_header(resp, "Content-Length");
+    size_t content_len = strlen(resp->message_body);
+    char *content_len_s = NULL;
+    int content_len_s_len = snprintf(NULL, 0, "%u", content_len);
+    content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
+    snprintf(content_len_s, content_len_s_len + 1, "%u", content_len);
+    creq_Response_add_header(resp, "Content-Length", content_len_s);
+    CREQ_GUARDED_FREE(content_len_s);
     return CREQ_STATUS_SUCC;
 }
 
