@@ -11,7 +11,10 @@
         "crtdefs.h": "c",
         "_mingw_print_pop.h": "c",
         "stdio_s.h": "c",
-        "wchar.h": "c"
+        "wchar.h": "c",
+        "inttypes.h": "c",
+        "stdint.h": "c",
+        "stddef.h": "c"
     },
     "cSpell.words": [
         "creq",
