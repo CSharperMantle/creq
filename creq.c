@@ -7,7 +7,7 @@
 // for portability consideration, try to make hacks to use %zd format for size_t
 #if defined(__MINGW32__) || defined (__MINGW64__)
 #define __USE_MINGW_ANSI_STDIO 1
-#endif /* defined(__MINGW32__) || defined (__MINGW64__) */
+#endif // defined(__MINGW32__) || defined (__MINGW64__)
 
 #include <stdbool.h>
 #include <stdio.h>
