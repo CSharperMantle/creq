@@ -66,6 +66,7 @@ typedef int creq_status_t;
 
 #define CREQ_GUARDED_FREE(ptr) if (ptr != NULL) { free(ptr); ptr = NULL; }
 
+#include "cvector.h"
 #include <stdbool.h>
 #include <wchar.h>
 

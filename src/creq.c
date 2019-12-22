@@ -16,6 +16,7 @@
 #include <stdarg.h>
 #include <wchar.h>
 #include "creq.h"
+#include "cvector.h"
 
 /*
  * RFC 7320

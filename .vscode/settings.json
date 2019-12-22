@@ -15,7 +15,8 @@
         "stdbool.h": "c",
         "inttypes.h": "c",
         "stdint.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "cvector.h": "c"
     },
     "cSpell.words": [
         "creq",
