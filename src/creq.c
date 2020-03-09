@@ -184,12 +184,9 @@ creq_HeaderLListNode_create(char *header, char *value)
     {
         return NULL;
     }
-    creq_HeaderLListNode_t *pNode =
-        (creq_HeaderLListNode_t *)_creq_malloc_n_init(
-            sizeof(struct creq_HeaderLListNode));
+    creq_HeaderLListNode_t *pNode = (creq_HeaderLListNode_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderLListNode));
 
-    creq_HeaderField_t *pField = (creq_HeaderField_t *)_creq_malloc_n_init(
-        sizeof(struct creq_HeaderField));
+    creq_HeaderField_t *pField = (creq_HeaderField_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderField));
     pField->field_name = _creq_malloc_strcpy(header);
     pField->is_field_name_literal = false;
     pField->field_value = _creq_malloc_strcpy(value);
@@ -206,12 +203,9 @@ creq_HeaderLListNode_create_literal(const char *header_s, const char *value_s)
     {
         return NULL;
     }
-    creq_HeaderLListNode_t *pNode =
-        (creq_HeaderLListNode_t *)_creq_malloc_n_init(
-            sizeof(struct creq_HeaderLListNode));
+    creq_HeaderLListNode_t *pNode = (creq_HeaderLListNode_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderLListNode));
 
-    creq_HeaderField_t *pField = (creq_HeaderField_t *)_creq_malloc_n_init(
-        sizeof(struct creq_HeaderField));
+    creq_HeaderField_t *pField = (creq_HeaderField_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderField));
     pField->field_name = (char *)header_s;
     pField->is_field_name_literal = true;
     pField->field_value = (char *)value_s;
@@ -224,8 +218,7 @@ creq_HeaderLListNode_create_literal(const char *header_s, const char *value_s)
 CREQ_PUBLIC(creq_status_t)
 creq_HeaderLListNode_free(creq_HeaderLListNode_t *node)
 {
-    if (node == NULL || node->data == NULL || node->data->field_name == NULL ||
-        node->data->field_value == NULL)
+    if (node == NULL || node->data == NULL || node->data->field_name == NULL || node->data->field_value == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
@@ -245,8 +238,7 @@ creq_HeaderLListNode_free(creq_HeaderLListNode_t *node)
 }
 
 CREQ_PUBLIC(creq_HeaderLListNode_t *)
-creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head,
-                                       const char *header)
+creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, const char *header)
 {
     if (header == NULL)
     {
@@ -263,14 +255,12 @@ creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head,
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, char *header,
-                                char *value)
+creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, char *header, char *value)
 {
     if (head == NULL || header == NULL || value == NULL) // guarded
         return CREQ_STATUS_FAILED;
 
-    creq_HeaderLListNode_t *pNewNode =
-        creq_HeaderLListNode_create(header, value);
+    creq_HeaderLListNode_t *pNewNode = creq_HeaderLListNode_create(header, value);
     if (*head == NULL) // first element?
     {
         *head = pNewNode;
@@ -289,15 +279,12 @@ creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, char *header,
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_HeaderLListNode_add_header_literal(creq_HeaderLListNode_t **head,
-                                        const char *header_s,
-                                        const char *value_s)
+creq_HeaderLListNode_add_header_literal(creq_HeaderLListNode_t **head, const char *header_s, const char *value_s)
 {
     if (head == NULL || header_s == NULL || value_s == NULL) // guarded
         return CREQ_STATUS_FAILED;
 
-    creq_HeaderLListNode_t *pNewNode =
-        creq_HeaderLListNode_create_literal(header_s, value_s);
+    creq_HeaderLListNode_t *pNewNode = creq_HeaderLListNode_create_literal(header_s, value_s);
     if (*head == NULL) // first element?
     {
         *head = pNewNode;
@@ -316,8 +303,7 @@ creq_HeaderLListNode_add_header_literal(creq_HeaderLListNode_t **head,
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_HeaderLListNode_delist_header_direct(creq_HeaderLListNode_t **head,
-                                          creq_HeaderLListNode_t *node)
+creq_HeaderLListNode_delist_header_direct(creq_HeaderLListNode_t **head, creq_HeaderLListNode_t *node)
 {
     if (head == NULL || node == NULL)
     {
@@ -346,8 +332,7 @@ creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, char *header)
         return NULL;
     }
     // look for a node
-    creq_HeaderLListNode_t *pNodeToDelete =
-        creq_HeaderLListNode_search_for_header(*head, header);
+    creq_HeaderLListNode_t *pNodeToDelete = creq_HeaderLListNode_search_for_header(*head, header);
     if (pNodeToDelete == NULL)
     {
         return NULL;
@@ -360,8 +345,7 @@ creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, char *header)
 CREQ_PUBLIC(creq_Request_t *)
 creq_Request_create(creq_Config_t *conf)
 {
-    creq_Request_t *pRequest =
-        (creq_Request_t *)_creq_malloc_n_init(sizeof(struct creq_Request));
+    creq_Request_t *pRequest = (creq_Request_t *)_creq_malloc_n_init(sizeof(struct creq_Request));
 
     if (conf != NULL && conf->config_type == CONF_REQUEST)
     {
@@ -406,8 +390,7 @@ creq_Request_free(creq_Request_t *req)
             }
             while (pNodeCursor != NULL)
             {
-                creq_HeaderLListNode_delist_header_direct(&req->list_head,
-                                                          pNodeCursor);
+                creq_HeaderLListNode_delist_header_direct(&req->list_head, pNodeCursor);
                 creq_HeaderLListNode_t *pPrev = pNodeCursor->prev;
                 creq_HeaderLListNode_free(pNodeCursor);
                 pNodeCursor = pPrev; ///@todo Test required!
@@ -451,7 +434,7 @@ creq_Request_set_target(creq_Request_t *req, char *requestTarget)
     if (!req->is_request_target_literal)
         CREQ_GUARDED_FREE(
             req->request_target); // has it been set previously? check it first, free it if necessary... if it is a malloc'ed string then free it.
-    if (requestTarget == NULL)    // user requests to clear
+    if (requestTarget == NULL) // user requests to clear
     {
         req->request_target = NULL;
         return CREQ_STATUS_SUCC;
@@ -464,23 +447,20 @@ creq_Request_set_target(creq_Request_t *req, char *requestTarget)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_set_target_literal(creq_Request_t *req,
-                                const char *requestTarget_s)
+creq_Request_set_target_literal(creq_Request_t *req, const char *requestTarget_s)
 {
     if (req == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
     if (!req->is_request_target_literal)
-        CREQ_GUARDED_FREE(
-            req->request_target); // if it is a malloc'ed string then free it.
+        CREQ_GUARDED_FREE(req->request_target); // if it is a malloc'ed string then free it.
     if (requestTarget_s == NULL)
     {
         req->request_target = NULL;
         return CREQ_STATUS_SUCC;
     }
-    req->request_target =
-        (char *)requestTarget_s; // this is a immediate literal value, store it.
+    req->request_target = (char *)requestTarget_s; // this is a immediate literal value, store it.
     req->is_request_target_literal = true;
     return CREQ_STATUS_SUCC;
 }
@@ -533,15 +513,13 @@ creq_Request_add_header(creq_Request_t *req, char *header, char *value)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_add_header_literal(creq_Request_t *req, const char *header_s,
-                                const char *value_s)
+creq_Request_add_header_literal(creq_Request_t *req, const char *header_s, const char *value_s)
 {
     if (req == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    return creq_HeaderLListNode_add_header_literal(&req->list_head, header_s,
-                                                   value_s);
+    return creq_HeaderLListNode_add_header_literal(&req->list_head, header_s, value_s);
 }
 
 CREQ_PUBLIC(creq_HeaderLListNode_t *)
@@ -561,8 +539,7 @@ creq_Request_remove_header(creq_Request_t *req, char *header)
     {
         return CREQ_STATUS_FAILED;
     }
-    creq_HeaderLListNode_t *node =
-        creq_HeaderLListNode_delist_header(&req->list_head, header);
+    creq_HeaderLListNode_t *node = creq_HeaderLListNode_delist_header(&req->list_head, header);
     if (node != NULL)
     {
         creq_HeaderLListNode_free(node);
@@ -572,8 +549,7 @@ creq_Request_remove_header(creq_Request_t *req, char *header)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_remove_header_direct(creq_Request_t *req,
-                                  creq_HeaderLListNode_t *node)
+creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderLListNode_t *node)
 {
     if (req == NULL || node == NULL)
     {
@@ -615,8 +591,7 @@ creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg)
     size_t content_len = strlen(req->message_body);
     char *content_len_s = NULL;
     int content_len_s_len = snprintf(NULL, 0, "%zd", content_len);
-    content_len_s =
-        (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
+    content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
     snprintf(content_len_s, content_len_s_len + 1, "%zd", content_len);
     creq_Request_add_header(req, "Content-Length", content_len_s);
     CREQ_GUARDED_FREE(content_len_s);
@@ -643,8 +618,7 @@ creq_Request_set_message_body_literal(creq_Request_t *req, const char *msg_s)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_set_message_body_literal_content_len(creq_Request_t *req,
-                                                  const char *msg)
+creq_Request_set_message_body_literal_content_len(creq_Request_t *req, const char *msg)
 {
     if (creq_Request_set_message_body_literal(req, msg) == CREQ_STATUS_FAILED)
     {
@@ -654,8 +628,7 @@ creq_Request_set_message_body_literal_content_len(creq_Request_t *req,
     size_t content_len = strlen(req->message_body);
     char *content_len_s = NULL;
     int content_len_s_len = snprintf(NULL, 0, "%zd", content_len);
-    content_len_s =
-        (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
+    content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
     snprintf(content_len_s, content_len_s_len + 1, "%zd", content_len);
     creq_Request_add_header(req, "Content-Length", content_len_s);
     CREQ_GUARDED_FREE(content_len_s);
@@ -681,19 +654,15 @@ creq_Request_stringify(creq_Request_t *req)
     }
     char *request_line_s = NULL, *headers_s = NULL, *body_s = NULL;
 
-    const char *line_ending_s =
-        _creq_get_line_ending_str(&req->config, CONF_REQUEST);
+    const char *line_ending_s = _creq_get_line_ending_str(&req->config, CONF_REQUEST);
     const char *http_meth_s = _creq_get_http_method_str(req->method);
-    char *http_version_s = _creq_get_http_version_str(req->http_version.major,
-                                                      req->http_version.minor);
+    char *http_version_s = _creq_get_http_version_str(req->http_version.major, req->http_version.minor);
 
     int request_line_len =
-        snprintf(NULL, 0, _creq_FMT_REQUEST_LINE, http_meth_s,
-                 req->request_target, http_version_s, line_ending_s);
-    request_line_s =
-        (char *)_creq_malloc_n_init(sizeof(char) * (request_line_len + 1));
-    snprintf(request_line_s, request_line_len + 1, _creq_FMT_REQUEST_LINE,
-             http_meth_s, req->request_target, http_version_s, line_ending_s);
+        snprintf(NULL, 0, _creq_FMT_REQUEST_LINE, http_meth_s, req->request_target, http_version_s, line_ending_s);
+    request_line_s = (char *)_creq_malloc_n_init(sizeof(char) * (request_line_len + 1));
+    snprintf(request_line_s, request_line_len + 1, _creq_FMT_REQUEST_LINE, http_meth_s, req->request_target,
+             http_version_s, line_ending_s);
     CREQ_GUARDED_FREE(http_version_s);
 
     // we now have a request_line_s string. Others are garbage now, except for line_ending_s
@@ -722,19 +691,16 @@ creq_Request_stringify(creq_Request_t *req)
         for (idx = 0; idx < header_list_len; idx++)
         {
             str_len +=
-                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name,
-                         fields[idx]->field_value, line_ending_s);
+                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
         }
         headers_s = (char *)_creq_malloc_n_init(sizeof(char) * (str_len + 1));
         for (idx = 0; idx < header_list_len; idx++)
         {
             char *str;
             int len =
-                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name,
-                         fields[idx]->field_value, line_ending_s);
+                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
             str = (char *)_creq_malloc_n_init(sizeof(char) * (len + 1));
-            snprintf(str, len + 1, _creq_FMT_HEADER, fields[idx]->field_name,
-                     fields[idx]->field_value, line_ending_s);
+            snprintf(str, len + 1, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
             strcat(headers_s, str);
             CREQ_GUARDED_FREE(str);
         }
@@ -743,13 +709,12 @@ creq_Request_stringify(creq_Request_t *req)
     body_s = req->message_body;
 
     char *full_req_s = NULL;
-    int full_req_len = snprintf(NULL, 0, _creq_FMT_FULL_REQUEST, request_line_s,
-                                headers_s == NULL ? line_ending_s : headers_s,
-                                line_ending_s, body_s == NULL ? "" : body_s);
+    int full_req_len =
+        snprintf(NULL, 0, _creq_FMT_FULL_REQUEST, request_line_s, headers_s == NULL ? line_ending_s : headers_s,
+                 line_ending_s, body_s == NULL ? "" : body_s);
     full_req_s = (char *)_creq_malloc_n_init(sizeof(char) * (full_req_len + 1));
-    snprintf(full_req_s, full_req_len + 1, _creq_FMT_FULL_REQUEST,
-             request_line_s, headers_s == NULL ? line_ending_s : headers_s,
-             line_ending_s, body_s == NULL ? "" : body_s);
+    snprintf(full_req_s, full_req_len + 1, _creq_FMT_FULL_REQUEST, request_line_s,
+             headers_s == NULL ? line_ending_s : headers_s, line_ending_s, body_s == NULL ? "" : body_s);
 
     CREQ_GUARDED_FREE(request_line_s);
     CREQ_GUARDED_FREE(headers_s);
@@ -760,8 +725,7 @@ creq_Request_stringify(creq_Request_t *req)
 CREQ_PUBLIC(creq_Response_t *)
 creq_Response_create(creq_Config_t *conf)
 {
-    creq_Response_t *pResponse =
-        (creq_Response_t *)_creq_malloc_n_init(sizeof(struct creq_Response));
+    creq_Response_t *pResponse = (creq_Response_t *)_creq_malloc_n_init(sizeof(struct creq_Response));
 
     if (conf != NULL && conf->config_type == CONF_RESPONSE)
     {
@@ -807,8 +771,7 @@ creq_Response_free(creq_Response_t *resp)
             }
             while (pNodeCursor != NULL)
             {
-                creq_HeaderLListNode_delist_header_direct(&resp->list_head,
-                                                          pNodeCursor);
+                creq_HeaderLListNode_delist_header_direct(&resp->list_head, pNodeCursor);
                 creq_HeaderLListNode_t *pPrev = pNodeCursor->prev;
                 creq_HeaderLListNode_free(pNodeCursor);
                 pNodeCursor = pPrev;
@@ -878,8 +841,7 @@ creq_Response_set_reason_phrase(creq_Response_t *resp, char *reason)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Response_set_reason_phrase_literal(creq_Response_t *resp,
-                                        const char *reason_s)
+creq_Response_set_reason_phrase_literal(creq_Response_t *resp, const char *reason_s)
 {
     if (resp == NULL)
     {
@@ -924,15 +886,13 @@ creq_Response_add_header(creq_Response_t *resp, char *header, char *value)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Response_add_header_literal(creq_Response_t *resp, const char *header_s,
-                                 const char *value_s)
+creq_Response_add_header_literal(creq_Response_t *resp, const char *header_s, const char *value_s)
 {
     if (resp == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    return creq_HeaderLListNode_add_header_literal(&resp->list_head, header_s,
-                                                   value_s);
+    return creq_HeaderLListNode_add_header_literal(&resp->list_head, header_s, value_s);
 }
 
 CREQ_PUBLIC(creq_HeaderLListNode_t *)
@@ -952,8 +912,7 @@ creq_Response_remove_header(creq_Response_t *resp, char *header)
     {
         return CREQ_STATUS_FAILED;
     }
-    creq_HeaderLListNode_t *node =
-        creq_HeaderLListNode_delist_header(&resp->list_head, header);
+    creq_HeaderLListNode_t *node = creq_HeaderLListNode_delist_header(&resp->list_head, header);
     if (node != NULL)
     {
         creq_HeaderLListNode_free(node);
@@ -963,8 +922,7 @@ creq_Response_remove_header(creq_Response_t *resp, char *header)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Response_remove_header_direct(creq_Response_t *resp,
-                                   creq_HeaderLListNode_t *node)
+creq_Response_remove_header_direct(creq_Response_t *resp, creq_HeaderLListNode_t *node)
 {
     if (resp == NULL || node == NULL)
     {
@@ -1006,8 +964,7 @@ creq_Response_set_message_body_content_len(creq_Response_t *resp, char *msg)
     size_t content_len = strlen(resp->message_body);
     char *content_len_s = NULL;
     int content_len_s_len = snprintf(NULL, 0, "%zd", content_len);
-    content_len_s =
-        (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
+    content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
     snprintf(content_len_s, content_len_s_len + 1, "%zd", content_len);
     creq_Response_add_header(resp, "Content-Length", content_len_s);
     CREQ_GUARDED_FREE(content_len_s);
@@ -1034,8 +991,7 @@ creq_Response_set_message_body_literal(creq_Response_t *resp, const char *msg_s)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Response_set_message_body_literal_content_len(creq_Response_t *resp,
-                                                   const char *msg)
+creq_Response_set_message_body_literal_content_len(creq_Response_t *resp, const char *msg)
 {
     if (creq_Response_set_message_body_literal(resp, msg) == CREQ_STATUS_FAILED)
     {
@@ -1045,8 +1001,7 @@ creq_Response_set_message_body_literal_content_len(creq_Response_t *resp,
     size_t content_len = strlen(resp->message_body);
     char *content_len_s = NULL;
     int content_len_s_len = snprintf(NULL, 0, "%zd", content_len);
-    content_len_s =
-        (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
+    content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
     snprintf(content_len_s, content_len_s_len + 1, "%zd", content_len);
     creq_Response_add_header(resp, "Content-Length", content_len_s);
     CREQ_GUARDED_FREE(content_len_s);
@@ -1068,19 +1023,14 @@ creq_Response_stringify(creq_Response_t *resp)
         return NULL;
     char *status_line_s = NULL, *headers_s = NULL, *body_s = NULL;
 
-    const char *line_ending_s =
-        _creq_get_line_ending_str(&resp->config, CONF_RESPONSE);
-    char *http_version_s = _creq_get_http_version_str(resp->http_version.major,
-                                                      resp->http_version.minor);
+    const char *line_ending_s = _creq_get_line_ending_str(&resp->config, CONF_RESPONSE);
+    char *http_version_s = _creq_get_http_version_str(resp->http_version.major, resp->http_version.minor);
 
     int status_line_len =
-        snprintf(NULL, 0, _creq_FMT_STATUS_LINE, http_version_s,
-                 resp->status_code, resp->reason_phrase, line_ending_s);
-    status_line_s =
-        (char *)_creq_malloc_n_init(sizeof(char) * (status_line_len + 1));
-    snprintf(status_line_s, status_line_len + 1, _creq_FMT_STATUS_LINE,
-             http_version_s, resp->status_code, resp->reason_phrase,
-             line_ending_s);
+        snprintf(NULL, 0, _creq_FMT_STATUS_LINE, http_version_s, resp->status_code, resp->reason_phrase, line_ending_s);
+    status_line_s = (char *)_creq_malloc_n_init(sizeof(char) * (status_line_len + 1));
+    snprintf(status_line_s, status_line_len + 1, _creq_FMT_STATUS_LINE, http_version_s, resp->status_code,
+             resp->reason_phrase, line_ending_s);
     CREQ_GUARDED_FREE(http_version_s);
 
     size_t header_list_len = 0;
@@ -1106,19 +1056,16 @@ creq_Response_stringify(creq_Response_t *resp)
         for (idx = 0; idx < header_list_len; idx++)
         {
             str_len +=
-                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name,
-                         fields[idx]->field_value, line_ending_s);
+                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
         }
         headers_s = (char *)_creq_malloc_n_init(sizeof(char) * (str_len + 1));
         for (idx = 0; idx < header_list_len; idx++)
         {
             char *str;
             int len =
-                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name,
-                         fields[idx]->field_value, line_ending_s);
+                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
             str = (char *)_creq_malloc_n_init(sizeof(char) * (len + 1));
-            snprintf(str, len + 1, _creq_FMT_HEADER, fields[idx]->field_name,
-                     fields[idx]->field_value, line_ending_s);
+            snprintf(str, len + 1, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
             strcat(headers_s, str);
             CREQ_GUARDED_FREE(str);
         }
@@ -1128,14 +1075,11 @@ creq_Response_stringify(creq_Response_t *resp)
 
     char *full_resp_s = NULL;
     int full_resp_len =
-        snprintf(NULL, 0, _creq_FMT_FULL_RESPONSE, status_line_s,
-                 headers_s == NULL ? line_ending_s : headers_s, line_ending_s,
-                 body_s == NULL ? "" : body_s);
-    full_resp_s =
-        (char *)_creq_malloc_n_init(sizeof(char) * (full_resp_len + 1));
-    snprintf(full_resp_s, full_resp_len + 1, _creq_FMT_FULL_RESPONSE,
-             status_line_s, headers_s == NULL ? line_ending_s : headers_s,
-             line_ending_s, body_s == NULL ? "" : body_s);
+        snprintf(NULL, 0, _creq_FMT_FULL_RESPONSE, status_line_s, headers_s == NULL ? line_ending_s : headers_s,
+                 line_ending_s, body_s == NULL ? "" : body_s);
+    full_resp_s = (char *)_creq_malloc_n_init(sizeof(char) * (full_resp_len + 1));
+    snprintf(full_resp_s, full_resp_len + 1, _creq_FMT_FULL_RESPONSE, status_line_s,
+             headers_s == NULL ? line_ending_s : headers_s, line_ending_s, body_s == NULL ? "" : body_s);
 
     CREQ_GUARDED_FREE(status_line_s);
     CREQ_GUARDED_FREE(headers_s);

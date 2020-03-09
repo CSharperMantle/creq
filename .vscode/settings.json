@@ -16,13 +16,17 @@
         "inttypes.h": "c",
         "stdint.h": "c",
         "stddef.h": "c",
-        "cvector.h": "c"
+        "cvector.h": "c",
+        ".clang-format": "yaml"
     },
     "cSpell.words": [
+        "cmake",
         "creq",
         "htab",
         "llvm",
+        "makefiles",
         "malloc'ed",
+        "mkdir",
         "struct",
         "xldscope"
     ]
