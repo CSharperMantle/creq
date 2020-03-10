@@ -4,12 +4,12 @@
  * @author CSharperMantle
  */
 
-
 #ifndef CREQ_H_INCLUDED
 #define CREQ_H_INCLUDED
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif // __cplusplus
 
 #if !defined(__WINDOWS__) && (defined(WIN32) || defined(WIN64) || defined(_MSC_VER) || defined(_WIN32))
@@ -40,19 +40,19 @@ then using the CREQ_API_VISIBILITY flag to "export" the same symbols the way CRE
 #endif
 
 #if defined(CREQ_HIDE_SYMBOLS)
-#define CREQ_PUBLIC(type)   type CREQ_STDCALL
+#define CREQ_PUBLIC(type) type CREQ_STDCALL
 #elif defined(CREQ_EXPORT_SYMBOLS)
-#define CREQ_PUBLIC(type)   __declspec(dllexport) type CREQ_STDCALL
+#define CREQ_PUBLIC(type) __declspec(dllexport) type CREQ_STDCALL
 #elif defined(CREQ_IMPORT_SYMBOLS)
-#define CREQ_PUBLIC(type)   __declspec(dllimport) type CREQ_STDCALL
+#define CREQ_PUBLIC(type) __declspec(dllimport) type CREQ_STDCALL
 #endif
 #define CREQ_PRIVATE(type) static type
 #else /* !__WINDOWS__ */
 #define CREQ_CDECL
 #define CREQ_STDCALL
 
-#if (defined(__GNUC__) || defined(__SUNPRO_CC) || defined (__SUNPRO_C)) && defined(CREQ_API_VISIBILITY)
-#define CREQ_PUBLIC(type)   __attribute__((visibility("default"))) type
+#if (defined(__GNUC__) || defined(__SUNPRO_CC) || defined(__SUNPRO_C)) && defined(CREQ_API_VISIBILITY)
+#define CREQ_PUBLIC(type) __attribute__((visibility("default"))) type
 #define CREQ_PRIVATE(type) __attribute__((visibility("hidden"))) type
 #else
 #define CREQ_PUBLIC(type) type
@@ -64,7 +64,14 @@ typedef int creq_status_t;
 #define CREQ_STATUS_SUCC 0
 #define CREQ_STATUS_FAILED 1
 
-#define CREQ_GUARDED_FREE(ptr) if (ptr != NULL) { free(ptr); ptr = NULL; }
+#define CREQ_GUARDED_FREE(ptr)                                                                                         \
+if (ptr != NULL)                                                                                                   \
+{                                                                                                                  \
+    free(ptr);                                                                                                     \
+    ptr = NULL;                                                                                                    \
+}
+
+#define CVECTOR_LOGARITHMIC_GROWTH
 
 #include "cvector.h"
 #include <stdbool.h>
@@ -122,12 +129,15 @@ typedef struct creq_HeaderLListNode
  */
 typedef struct creq_Config
 {
-    union {
-        struct {
+    union
+    {
+        struct
+        {
             creq_LineEnding_t line_ending;
 
         } request_config;
-        struct {
+        struct
+        {
             creq_LineEnding_t line_ending;
 
         } response_config;
@@ -160,7 +170,7 @@ typedef struct creq_Request
     // line ending
 
     // > header field
-    creq_HeaderLListNode_t *list_head;
+    cvector_VECTOR(creq_HeaderField_t *) header_vector;
     // line ending after each header
     // line ending again in the end
 
@@ -190,6 +200,7 @@ typedef struct creq_Response
 
     // > header field
     creq_HeaderLListNode_t *list_head;
+    cvector_VECTOR(creq_HeaderField_t *) *header_vector;
     // line ending after each header
     // line ending again in the end
 
@@ -209,7 +220,8 @@ typedef struct creq_Response
  * @attention DO NOT directly free the node unless it's not inserted into the list.
  * @attention For internal use only.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(char *header, char *value);
+CREQ_PUBLIC(creq_HeaderLListNode_t *)
+creq_HeaderLListNode_create(char *header, char *value);
 
 /**
  * @brief Creates a new header list node which contains a header-value pair with literal header and value.
@@ -221,7 +233,8 @@ CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create(char *header, 
  * @attention For internal use only.
  * @attention Behaviour will be undefined if non-literals are given.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create_literal(const char *header_s, const char *value_s);
+CREQ_PUBLIC(creq_HeaderLListNode_t *)
+creq_HeaderLListNode_create_literal(const char *header_s, const char *value_s);
 
 /**
  * @brief Frees a previously-created HeaderLListNode.
@@ -234,7 +247,8 @@ CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_create_literal(const 
  * @see creq_HeaderLListNode
  * @see creq_HeaderField
  */
-CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_free(creq_HeaderLListNode_t *node);
+CREQ_PUBLIC(creq_status_t)
+creq_HeaderLListNode_free(creq_HeaderLListNode_t *node);
 
 /**
  * @brief Search for a header-value pair in the headers list which contains the given header.
@@ -242,7 +256,8 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_free(creq_HeaderLListNode_t *nod
  *  @retval NULL Header not found.
  * @attention Always return the first one when there are multiple occurrences. To search for multiple header-value pairs, call this procedure iteratively with the last-found header as the head until NULL is returned.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, const char *header);
+CREQ_PUBLIC(creq_HeaderLListNode_t *)
+creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, const char *header);
 
 /**
  * @brief Adds a new item to the tail of the given list.
@@ -250,7 +265,8 @@ CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_search_for_header(cre
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  */
-CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, char *header, char *value);
+CREQ_PUBLIC(creq_status_t)
+creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, char *header, char *value);
 
 /**
  * @brief Adds a new item with literal header and value to the tail of the given list.
@@ -259,7 +275,8 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header(creq_HeaderLListNode_
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This function works with literal header and values. If non-literals are given, the result is undefined.
  */
-CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header_literal(creq_HeaderLListNode_t **head, const char *header_s, const char *value_s);
+CREQ_PUBLIC(creq_status_t)
+creq_HeaderLListNode_add_header_literal(creq_HeaderLListNode_t **head, const char *header_s, const char *value_s);
 
 /**
  * @brief Moves a header node out of the list.
@@ -269,7 +286,8 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_add_header_literal(creq_HeaderLL
  * @attention This procedure directly operates on the given node pointer.
  * @attention For internal use only.
  */
-CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_delist_header_direct(creq_HeaderLListNode_t **head, creq_HeaderLListNode_t *node);
+CREQ_PUBLIC(creq_status_t)
+creq_HeaderLListNode_delist_header_direct(creq_HeaderLListNode_t **head, creq_HeaderLListNode_t *node);
 
 /**
  * @brief Moves a header from the headers list which has the given header out of the list. Alternative to creq_HeaderLListNode_delist_header_direct.
@@ -278,7 +296,19 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderLListNode_delist_header_direct(creq_Header
  *  @retval NULL Header not found.
  * @attention Always delete the first header found in the list. To delete multiple header-value pairs, call this procedure iteratively until NULL is returned.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, char *header);
+CREQ_PUBLIC(creq_HeaderLListNode_t *)
+creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, char *header);
+
+/**
+ * @brief Frees a previously-created creq_HeaderField.
+ * @return Indicates if the procedure is finished properly.
+ *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
+ *  @retval CREQ_STATUS_FAILED Procedure fails.
+ * @attention This procedure only frees the object, the data field and the strings.
+ * @attention For internal use only.
+ * @see creq_HeaderField
+ */
+CREQ_PUBLIC(creq_status_t) creq_HeaderField_free(creq_HeaderField_t **ptrToFieldPtr);
 
 /**
  * @brief Creates a new creq_Request object.
@@ -377,19 +407,28 @@ CREQ_PUBLIC(creq_status_t) creq_Request_add_header(creq_Request_t *req, char *he
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This function works with literal header and values. If non-literals are given, the result is undefined.
  */
-CREQ_PUBLIC(creq_status_t) creq_Request_add_header_literal(creq_Request_t *req, const char *header_s, const char *value_s);
+CREQ_PUBLIC(creq_status_t)
+creq_Request_add_header_literal(creq_Request_t *req, const char *header_s, const char *value_s);
 
 /**
  * @brief Searches for a header-value pair in the headers list of the creq_Request object which contains the given header.
  * @return A pointer to the header found.
  *  @retval NULL Header not found.
- * @attention Always return the first one when there are multiple occurrences. To search for multiple header-value pairs, call this procedure iteratively with the last-found header as the head until NULL is returned.
+ * @attention Always return the first one when there are multiple occurrences.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_Request_search_for_header(creq_Request_t *req, char *header);
+CREQ_PUBLIC(creq_HeaderField_t *) creq_Request_search_for_header(creq_Request_t *req, char *header);
+
+/**
+ * @brief Get a header-value pair's index in the list.
+ * @return The index.
+ *  @retval -1 Header not found.
+ * @attention Always return the first one when there are multiple occurrences.
+ */
+CREQ_PUBLIC(int) creq_Request_search_for_header_index(creq_Request_t *req, char *header);
 
 /**
  * @brief Moves the header with the given header name out of the creq_Request object's headers list and frees it.
- *  @see creq_HeaderLListNode_delist_header
+ *  @see creq_HeaderField_free
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
@@ -402,11 +441,10 @@ CREQ_PUBLIC(creq_status_t) creq_Request_remove_header(creq_Request_t *req, char 
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @attention This procedure directly operates on the given node pointer. Often used with creq_Request_search_for_header .
+ * @attention This procedure directly operates on the given pointer. Often used with creq_Request_search_for_header.
  * @see creq_Request_search_for_header
- * @attention Behaviour will be undefined if the given header is not in the list.
  */
-CREQ_PUBLIC(creq_status_t) creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderLListNode_t *node);
+CREQ_PUBLIC(creq_status_t) creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderField_t *node);
 
 /**
  * @brief Set the creq_Request object's message body to the given string.
@@ -560,7 +598,8 @@ CREQ_PUBLIC(creq_status_t) creq_Response_add_header(creq_Response_t *resp, char 
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This function works with literal header and values. If non-literals are given, the result is undefined.
  */
-CREQ_PUBLIC(creq_status_t) creq_Response_add_header_literal(creq_Response_t *resp, const char *header_s, const char *value_s);
+CREQ_PUBLIC(creq_status_t)
+creq_Response_add_header_literal(creq_Response_t *resp, const char *header_s, const char *value_s);
 
 /**
  * @brief Searches for a header-value pair in the headers list of the creq_Response object which contains the given header.
@@ -631,7 +670,8 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_content_len(creq_Respo
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  */
-CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_literal_content_len(creq_Response_t *resp, const char *msg);
+CREQ_PUBLIC(creq_status_t)
+creq_Response_set_message_body_literal_content_len(creq_Response_t *resp, const char *msg);
 
 /**
  * @brief Get the creq_Response object's message body.

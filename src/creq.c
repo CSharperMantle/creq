@@ -342,6 +342,28 @@ creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, char *header)
     return pNodeToDelete;
 }
 
+CREQ_PUBLIC(creq_status_t)
+creq_HeaderField_free(creq_HeaderField_t **ptrToFieldPtr)
+{
+    if (ptrToFieldPtr == NULL)
+    {
+        return CREQ_STATUS_FAILED;
+    }
+    creq_HeaderField_t *pField = *ptrToFieldPtr;
+    if (!pField->is_field_name_literal)
+    {
+        CREQ_GUARDED_FREE(pField->field_name);
+        pField->field_name = NULL;
+    }
+    if (!pField->is_field_value_literal)
+    {
+        CREQ_GUARDED_FREE(pField->field_value);
+        pField->field_value = NULL;
+    }
+    CREQ_GUARDED_FREE(pField);
+    return CREQ_STATUS_SUCC;
+}
+
 CREQ_PUBLIC(creq_Request_t *)
 creq_Request_create(creq_Config_t *conf)
 {
@@ -363,7 +385,7 @@ creq_Request_create(creq_Config_t *conf)
     pRequest->request_target = NULL;
     pRequest->http_version.major = 0;
     pRequest->http_version.minor = 0;
-    pRequest->list_head = NULL;
+    pRequest->header_vector = NULL;
     pRequest->is_message_body_literal = false;
     pRequest->message_body = NULL;
 
@@ -380,21 +402,14 @@ creq_Request_free(creq_Request_t *req)
             CREQ_GUARDED_FREE(req->request_target);
         if (!req->is_message_body_literal)
             CREQ_GUARDED_FREE(req->message_body);
-        // free linked list
-        creq_HeaderLListNode_t *pNodeCursor = req->list_head;
-        if (pNodeCursor != NULL)
+        creq_HeaderField_t *pHeader = NULL;
+        size_t szNowSize = cvector_size(req->header_vector);
+        while (szNowSize > 0)
         {
-            while (pNodeCursor->next != NULL) // find the last element
-            {
-                pNodeCursor = pNodeCursor->next;
-            }
-            while (pNodeCursor != NULL)
-            {
-                creq_HeaderLListNode_delist_header_direct(&req->list_head, pNodeCursor);
-                creq_HeaderLListNode_t *pPrev = pNodeCursor->prev;
-                creq_HeaderLListNode_free(pNodeCursor);
-                pNodeCursor = pPrev; ///@todo Test required!
-            }
+            pHeader = req->header_vector[szNowSize - 1];
+            cvector_pop_back(req->header_vector);
+            creq_HeaderField_free(&pHeader);
+            szNowSize = cvector_size(req->header_vector);
         }
         // finally
         free(req);
@@ -427,7 +442,7 @@ creq_Request_get_http_method(creq_Request_t *req)
 CREQ_PUBLIC(creq_status_t)
 creq_Request_set_target(creq_Request_t *req, char *requestTarget)
 {
-    if (req == NULL)
+    if (req == NULL || requestTarget == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
@@ -449,7 +464,7 @@ creq_Request_set_target(creq_Request_t *req, char *requestTarget)
 CREQ_PUBLIC(creq_status_t)
 creq_Request_set_target_literal(creq_Request_t *req, const char *requestTarget_s)
 {
-    if (req == NULL)
+    if (req == NULL || requestTarget_s == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
@@ -505,59 +520,109 @@ creq_Request_get_http_version(creq_Request_t *req)
 CREQ_PUBLIC(creq_status_t)
 creq_Request_add_header(creq_Request_t *req, char *header, char *value)
 {
-    if (req == NULL)
+    if (req == NULL || header == NULL || value == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    return creq_HeaderLListNode_add_header(&req->list_head, header, value);
+    creq_HeaderField_t *pNewHeader = (creq_HeaderField_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderField));
+    pNewHeader->field_name = _creq_malloc_strcpy(header);
+    pNewHeader->is_field_name_literal = false;
+    pNewHeader->field_value = _creq_malloc_strcpy(value);
+    pNewHeader->is_field_value_literal = false;
+
+    cvector_push_back(req->header_vector, pNewHeader);
+    return CREQ_STATUS_SUCC;
+    // return creq_HeaderLListNode_add_header(&req->list_head, header, value);
 }
 
 CREQ_PUBLIC(creq_status_t)
 creq_Request_add_header_literal(creq_Request_t *req, const char *header_s, const char *value_s)
 {
-    if (req == NULL)
+    if (req == NULL || header_s == NULL || value_s == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    return creq_HeaderLListNode_add_header_literal(&req->list_head, header_s, value_s);
+    creq_HeaderField_t *pNewHeader = (creq_HeaderField_t *)_creq_malloc_n_init(sizeof(struct creq_HeaderField));
+    pNewHeader->field_name = (char *)header_s;
+    pNewHeader->is_field_name_literal = true;
+    pNewHeader->field_value = (char *)value_s;
+    pNewHeader->is_field_value_literal = true;
+
+    cvector_push_back(req->header_vector, pNewHeader);
+    return CREQ_STATUS_SUCC;
 }
 
-CREQ_PUBLIC(creq_HeaderLListNode_t *)
+CREQ_PUBLIC(creq_HeaderField_t *)
 creq_Request_search_for_header(creq_Request_t *req, char *header)
 {
-    if (req == NULL)
+    if (req == NULL || req->header_vector == NULL || header == NULL)
     {
         return NULL;
     }
-    return creq_HeaderLListNode_search_for_header(req->list_head, header);
+    for (int i = 0; i < cvector_size(req->header_vector); ++i)
+    {
+        if (!strcmp(req->header_vector[i]->field_name, header))
+        {
+            return req->header_vector[i];
+        }
+    }
+    return NULL;
+}
+
+CREQ_PUBLIC(int)
+creq_Request_search_for_header_index(creq_Request_t *req, char *header)
+{
+    if (req == NULL || req->header_vector == NULL || header == NULL)
+    {
+        return -1;
+    }
+    for (int i = 0; i < cvector_size(req->header_vector); ++i)
+    {
+        if (!strcmp(req->header_vector[i]->field_name, header))
+        {
+            return i;
+        }
+    }
+    return -1;
 }
 
 CREQ_PUBLIC(creq_status_t)
 creq_Request_remove_header(creq_Request_t *req, char *header)
 {
-    if (req == NULL)
+    if (req == NULL || header == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    creq_HeaderLListNode_t *node = creq_HeaderLListNode_delist_header(&req->list_head, header);
-    if (node != NULL)
+    int idx = creq_Request_search_for_header_index(req, header);
+    if (idx >= 0)
     {
-        creq_HeaderLListNode_free(node);
+        creq_HeaderField_t *pNode = req->header_vector[idx];
+        creq_HeaderField_free(pNode);
+        cvector_erase(req->header_vector, idx);
         return CREQ_STATUS_SUCC;
     }
     return CREQ_STATUS_FAILED;
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderLListNode_t *node)
+creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderField_t *header)
 {
-    if (req == NULL || node == NULL)
+    if (req == NULL || header == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    creq_HeaderLListNode_delist_header_direct(&req->list_head, node);
-    creq_HeaderLListNode_free(node);
-    return CREQ_STATUS_SUCC;
+    for (int i = 0; i < cvector_size(req->header_vector); ++i)
+    {
+        if (req->header_vector[i] == header)
+        {
+            creq_HeaderField_t *pNode = req->header_vector[i];
+            creq_HeaderField_free(pNode);
+            cvector_erase(req->header_vector, i);
+            return CREQ_STATUS_SUCC;
+        }
+    }
+
+    return CREQ_STATUS_FAILED;
 }
 
 CREQ_PUBLIC(creq_status_t)
@@ -664,43 +729,26 @@ creq_Request_stringify(creq_Request_t *req)
     snprintf(request_line_s, request_line_len + 1, _creq_FMT_REQUEST_LINE, http_meth_s, req->request_target,
              http_version_s, line_ending_s);
     CREQ_GUARDED_FREE(http_version_s);
-
     // we now have a request_line_s string. Others are garbage now, except for line_ending_s
 
-    // walk the linked list
-    size_t header_list_len = 0;
-    creq_HeaderLListNode_t *cursor = req->list_head;
-    while (cursor != NULL)
-    {
-        header_list_len++;
-        cursor = cursor->next;
-    }
+    size_t header_list_len = cvector_size(req->header_vector);
     if (header_list_len != 0)
     {
         size_t idx = 0;
         int str_len = 0;
-        creq_HeaderField_t *fields[header_list_len];
-        cursor = req->list_head;
-        while (cursor != NULL)
-        {
-            fields[idx] = cursor->data;
-            idx++;
-            cursor = cursor->next;
-        }
+        cvector_VECTOR(creq_HeaderField_t *) hv = req->header_vector;
 
         for (idx = 0; idx < header_list_len; idx++)
         {
-            str_len +=
-                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+            str_len += snprintf(NULL, 0, _creq_FMT_HEADER, hv[idx]->field_name, hv[idx]->field_value, line_ending_s);
         }
         headers_s = (char *)_creq_malloc_n_init(sizeof(char) * (str_len + 1));
         for (idx = 0; idx < header_list_len; idx++)
         {
             char *str;
-            int len =
-                snprintf(NULL, 0, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+            int len = snprintf(NULL, 0, _creq_FMT_HEADER, hv[idx]->field_name, hv[idx]->field_value, line_ending_s);
             str = (char *)_creq_malloc_n_init(sizeof(char) * (len + 1));
-            snprintf(str, len + 1, _creq_FMT_HEADER, fields[idx]->field_name, fields[idx]->field_value, line_ending_s);
+            snprintf(str, len + 1, _creq_FMT_HEADER, hv[idx]->field_name, hv[idx]->field_value, line_ending_s);
             strcat(headers_s, str);
             CREQ_GUARDED_FREE(str);
         }

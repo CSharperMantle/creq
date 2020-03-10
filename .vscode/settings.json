@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        ".clang-format": "yaml",
         "creq.h": "c",
         "stdarg.h": "c",
         "string.h": "c",
@@ -17,16 +18,20 @@
         "stdint.h": "c",
         "stddef.h": "c",
         "cvector.h": "c",
-        ".clang-format": "yaml"
+        "cstdio": "c",
+        "assert.h": "c",
+        "features.h": "c"
     },
     "cSpell.words": [
         "cmake",
         "creq",
+        "cvector",
         "htab",
         "llvm",
         "makefiles",
         "malloc'ed",
         "mkdir",
+        "multiline",
         "struct",
         "xldscope"
     ]

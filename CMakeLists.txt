@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(creq VERSION 0.1.5.1)
+project(creq VERSION 0.1.6.0)
 
 add_subdirectory(lib)
 add_subdirectory(src)

@@ -1,8 +1,13 @@
+#ifdef NDEBUG
+#undef NDEBUG
+#endif /* NDEBUG */
+
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include "creq.h"
 
-int main()
+int main(int argc, char *argv[])
 {
     printf("%s\r\n", "---NOW PRINTING A GET REQUEST");
     creq_Request_t *req = NULL;
@@ -66,9 +71,7 @@ int main()
     creq_Request_add_header_literal(req, "User-Agent", "creq/0.1.5.1");
     creq_Request_add_header_literal(req, "Content-Length", "15");
     creq_Request_add_header_literal(req, "Connection", "close");
-    creq_Request_add_header_literal(req, "Bogus", "placeholder");
-    creq_Request_remove_header(req, "Bogus");
-    creq_Request_set_message_body_literal_content_len(req, "user=CSharperMantle&mood=happy");
+    creq_Request_set_message_body_literal_content_len(req, "user=CSharperMantle&status=🚗");
     req_str = creq_Request_stringify(req);
     printf("%s\r\n", req_str);
     creq_Request_free(req);
