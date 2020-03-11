@@ -2,6 +2,7 @@
 #undef NDEBUG
 #endif /* NDEBUG */
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -10,30 +11,37 @@
 void _creqtest_print_status(char *str);
 
 void _creqtest_print_good(char *str);
+
 void _creqtest_print_bad(char *str);
+
+#define _creqtest_assert(expr) { assert(expr); _creqtest_print_good("assert (" #expr ") finished"); }
 
 int main(int argc, char *argv[])
 {
-    printf("%s\r\n", "---NOW PRINTING A GET REQUEST");
+    _creqtest_print_status("Now testing Request basics");
     creq_Request_t *req = NULL;
     creq_Config_t req_conf;
     req_conf.config_type = CONF_REQUEST;
     req_conf.data.request_config.line_ending = LE_CRLF;
     req = creq_Request_create(&req_conf);
+    _creqtest_assert(req->config.config_type == CONF_REQUEST);
+    _creqtest_assert(req->config.data.request_config.line_ending == LE_CRLF);
     creq_Request_set_http_method(req, METH_GET);
+    _creqtest_assert(req->method == METH_GET);
     creq_Request_set_http_version(req, 1, 1);
-    creq_Request_set_target_literal(req, "www.baidu.com");
-    creq_Request_add_header_literal(req, "Host", "www.baidu.com");
+    _creqtest_assert(req->http_version.major == 1);
+    _creqtest_assert(req->http_version.minor == 1);
+    creq_Request_set_target_literal(req, "www.example.com");
+    creq_Request_add_header_literal(req, "Host", "www.example.com");
     creq_Request_add_header_literal(req, "User-Agent", "creq/0.1.5.1");
     creq_Request_add_header_literal(req, "Connection", "close");
+    _creqtest_assert(!strcmp(creq_Request_search_for_header(req, "Host")->field_value, "www.example.com"));
     creq_Request_set_message_body_literal(req, "");
-    char *req_str = creq_Request_stringify(req);
-    printf("%s\r\n", req_str);
+    _creqtest_assert(!strcmp(creq_Request_get_message_body(req), ""));
+    _creqtest_assert(req->is_message_body_literal == true);
     creq_Request_free(req);
-    if (req_str != NULL)
-        free(req_str);
 
-    printf("%s\r\n", "---NOW PRINTING A POST REQUEST");
+    _creqtest_print_status("Now testing header modification");
     req = creq_Request_create(&req_conf);
     creq_Request_set_http_method(req, METH_POST);
     creq_Request_set_http_version(req, 1, 1);
@@ -43,14 +51,12 @@ int main(int argc, char *argv[])
     creq_Request_add_header_literal(req, "Connection", "close");
     creq_Request_add_header_literal(req, "Bogus", "placeholder");
     creq_Request_remove_header(req, "Bogus");
+    _creqtest_assert(creq_Request_search_for_header_index(req, "Bogus") == -1);
+    _creqtest_assert(creq_Request_search_for_header(req, "Bogus") == NULL);
     creq_Request_set_message_body_literal(req, "user=CSharperMantle&mood=happy");
-    req_str = creq_Request_stringify(req);
-    printf("%s\r\n", req_str);
     creq_Request_free(req);
-    if (req_str != NULL)
-        free(req_str);
 
-    printf("%s\r\n", "---NOW PRINTING A POST REQUEST WITH AUTOMATICALLY CALCULATED Content-Length");
+    _creqtest_print_status("Now testing automatic Content-Length calculation (no replacement)");
     req = creq_Request_create(&req_conf);
     creq_Request_set_http_method(req, METH_POST);
     creq_Request_set_http_version(req, 1, 1);
@@ -58,16 +64,12 @@ int main(int argc, char *argv[])
     creq_Request_add_header_literal(req, "Host", "www.my-site.com");
     creq_Request_add_header_literal(req, "User-Agent", "creq/0.1.5.1");
     creq_Request_add_header_literal(req, "Connection", "close");
-    creq_Request_add_header_literal(req, "Bogus", "placeholder");
-    creq_Request_remove_header(req, "Bogus");
     creq_Request_set_message_body_literal_content_len(req, "user=CSharperMantle&mood=happy");
-    req_str = creq_Request_stringify(req);
-    printf("%s\r\n", req_str);
+    _creqtest_assert(creq_Request_search_for_header(req, "Content-Length")->field_value != NULL);
+    _creqtest_assert(!strcmp(creq_Request_search_for_header(req, "Content-Length")->field_value, "30"));
     creq_Request_free(req);
-    if (req_str != NULL)
-        free(req_str);
 
-    printf("%s\r\n", "---NOW PRINTING A POST REQUEST WITH A PRE-DEFINED Content-Length WHICH NEED TO BE UPDATED");
+    _creqtest_print_status("Now testing automatic Content-Length calculation (replacement)");
     req = creq_Request_create(&req_conf);
     creq_Request_set_http_method(req, METH_POST);
     creq_Request_set_http_version(req, 1, 1);
@@ -77,13 +79,11 @@ int main(int argc, char *argv[])
     creq_Request_add_header_literal(req, "Content-Length", "15");
     creq_Request_add_header_literal(req, "Connection", "close");
     creq_Request_set_message_body_literal_content_len(req, "user=CSharperMantle&status=🚗");
-    req_str = creq_Request_stringify(req);
-    printf("%s\r\n", req_str);
+    _creqtest_assert(creq_Request_search_for_header(req, "Content-Length")->field_value != NULL);
+    _creqtest_assert(!strcmp(creq_Request_search_for_header(req, "Content-Length")->field_value, "31"));
     creq_Request_free(req);
-    if (req_str != NULL)
-        free(req_str);
 
-    printf("%s\r\n", "---NOW PRINTING A 200 RESPONSE");
+    _creqtest_print_status("NOW PRINTING A 200 RESPONSE");
     creq_Response_t *resp = NULL;
     creq_Config_t resp_conf;
     resp_conf.config_type = CONF_RESPONSE;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     if (resp_str != NULL)
         free(resp_str);
 
-    printf("%s\r\n", "---NOW PRINTING A 200 RESPONSE WITH CALCULATED Content-Length");
+    _creqtest_print_status("NOW PRINTING A 200 RESPONSE WITH CALCULATED Content-Length");
     resp = creq_Response_create(&resp_conf);
     creq_Response_set_http_version(resp, 1, 1);
     creq_Response_set_status_code(resp, 200);
@@ -127,4 +127,19 @@ int main(int argc, char *argv[])
         free(resp_str);
 
     return 0;
+}
+
+void _creqtest_print_status(char *str)
+{
+    printf("[*] %s\r\n", str);
+}
+
+void _creqtest_print_good(char *str)
+{
+    printf("[+] %s\r\n", str);
+}
+
+void _creqtest_print_bad(char *str)
+{
+    printf("[-] %s\r\n", str);
 }

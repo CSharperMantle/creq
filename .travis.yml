@@ -1,5 +1,5 @@
 language: c
-matrix:
+jobs:
   include:
     - name: "Linux gcc C"
       os: linux
