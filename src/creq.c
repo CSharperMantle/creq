@@ -597,7 +597,7 @@ creq_Request_remove_header(creq_Request_t *req, char *header)
     if (idx >= 0)
     {
         creq_HeaderField_t *pNode = req->header_vector[idx];
-        creq_HeaderField_free(pNode);
+        creq_HeaderField_free(&pNode);
         cvector_erase(req->header_vector, idx);
         return CREQ_STATUS_SUCC;
     }
@@ -616,7 +616,7 @@ creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderField_t *heade
         if (req->header_vector[i] == header)
         {
             creq_HeaderField_t *pNode = req->header_vector[i];
-            creq_HeaderField_free(pNode);
+            creq_HeaderField_free(&pNode);
             cvector_erase(req->header_vector, i);
             return CREQ_STATUS_SUCC;
         }
