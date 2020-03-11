@@ -25,6 +25,7 @@
     "cSpell.words": [
         "cmake",
         "creq",
+        "creqtest",
         "cvector",
         "htab",
         "llvm",

@@ -4,11 +4,11 @@ matrix:
     - name: "Linux gcc C"
       os: linux
       compiler: gcc
-      env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles"
+      env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles" TEST_EXE_NAME="src/creq_test"
     - name: "Linux clang C"
       os: linux
       compiler: clang
-      env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles"
+      env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles" TEST_EXE_NAME="src/creq_test"
 
 before_script:
   - cmake --version
@@ -18,3 +18,4 @@ before_script:
 
 script:
   - $MAKE all
+  - $TRAVIS_BUILD_DIR/build/$TEST_EXE_NAME
