@@ -17,12 +17,13 @@ void _creqtest_print_bad(char *str);
 #define _creqtest_assert(expr)                                                                                         \
     {                                                                                                                  \
         assert(expr);                                                                                                  \
-        _creqtest_print_good("assert (" #expr ") finished");                                                           \
+        _creqtest_print_good("assert (" #expr ") succeeded");                                                          \
     }
 
 int main(int argc, char *argv[])
 {
-    _creqtest_print_status("Now testing Request basics");
+    _creqtest_print_status("creq_Request part");
+    _creqtest_print_status("Now testing request basics");
     creq_Request_t *req = NULL;
     creq_Config_t req_conf;
     req_conf.config_type = CONF_REQUEST;
@@ -87,30 +88,31 @@ int main(int argc, char *argv[])
     _creqtest_assert(!strcmp(creq_Request_search_for_header(req, "Content-Length")->field_value, "31"));
     creq_Request_free(req);
 
-    _creqtest_print_status("NOW PRINTING A 200 RESPONSE");
+    _creqtest_print_status("creq_Response part");
+    _creqtest_print_status("Now testing Response basics and header modification");
     creq_Response_t *resp = NULL;
     creq_Config_t resp_conf;
     resp_conf.config_type = CONF_RESPONSE;
     resp_conf.data.response_config.line_ending = LE_CRLF;
-    char *resp_str = NULL;
-
     resp = creq_Response_create(&resp_conf);
+    _creqtest_assert(resp->config.config_type == CONF_RESPONSE);
+    _creqtest_assert(resp->config.data.response_config.line_ending == LE_CRLF);
     creq_Response_set_http_version(resp, 1, 1);
     creq_Response_set_status_code(resp, 200);
+    _creqtest_assert(resp->status_code == 200);
     creq_Response_set_reason_phrase(resp, "OK");
+    _creqtest_assert(!strcmp(resp->reason_phrase, "OK"));
     creq_Response_add_header_literal(resp, "Content-Type", "text/plain; charset=utf-8");
     creq_Response_add_header_literal(resp, "Connection", "close");
     creq_Response_add_header_literal(resp, "X-Generated-By", "creq/0.1.5.1");
     creq_Response_add_header_literal(resp, "Bogus", "placeholder");
     creq_Response_remove_header(resp, "Bogus");
+    _creqtest_assert(creq_Response_search_for_header_index(resp, "Bogus") == -1);
+    _creqtest_assert(creq_Response_search_for_header(resp, "Bogus") == NULL);
     creq_Response_set_message_body_literal(resp, "Hello world!");
-    resp_str = creq_Response_stringify(resp);
-    printf("%s\r\n", resp_str);
     creq_Response_free(resp);
-    if (resp_str != NULL)
-        free(resp_str);
 
-    _creqtest_print_status("NOW PRINTING A 200 RESPONSE WITH CALCULATED Content-Length");
+    _creqtest_print_status("Now testing automatic Content-Length calculation (no replacement)");
     resp = creq_Response_create(&resp_conf);
     creq_Response_set_http_version(resp, 1, 1);
     creq_Response_set_status_code(resp, 200);
@@ -118,17 +120,12 @@ int main(int argc, char *argv[])
     creq_Response_add_header_literal(resp, "Content-Type", "text/html; charset=utf-8");
     creq_Response_add_header_literal(resp, "Connection", "close");
     creq_Response_add_header_literal(resp, "X-Generated-By", "creq/0.1.5.1");
-    creq_Response_add_header_literal(resp, "Bogus", "placeholder");
-    creq_Response_remove_header(resp, "Bogus");
     creq_Response_set_message_body_literal_content_len(
-        resp, "<!DOCTYPE html><html><head><meta http-equiv=\"Content-Type\" content=\"text/html; "
-              "charset=utf-8\"><title>Example Output</title></head><body><div>This is an example "
-              "output.</div></body></html>");
-    resp_str = creq_Response_stringify(resp);
-    printf("%s\r\n", resp_str);
+        resp, "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Example Output</title></head><body><div>This "
+              "is an example output.</div></body></html>");
+    _creqtest_assert(creq_Response_search_for_header(resp, "Content-Length")->field_value != NULL);
+    _creqtest_assert(!strcmp(creq_Response_search_for_header(resp, "Content-Length")->field_value, "142"));
     creq_Response_free(resp);
-    if (resp_str != NULL)
-        free(resp_str);
 
     return 0;
 }

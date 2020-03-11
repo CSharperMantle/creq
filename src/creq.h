@@ -543,6 +543,15 @@ creq_Response_add_header_literal(creq_Response_t *resp, const char *header_s, co
 CREQ_PUBLIC(creq_HeaderField_t *) creq_Response_search_for_header(creq_Response_t *resp, char *header);
 
 /**
+ * @brief Get a header-value pair's index in the list.
+ * @return The index.
+ *  @retval -1 Header not found.
+ * @attention Always return the first one when there are multiple occurrences.
+ */
+CREQ_PUBLIC(int)
+creq_Response_search_for_header_index(creq_Response_t *resp, char *header);
+
+/**
  * @brief Moves the header with the given header name out of the creq_Response object's headers list and frees it.
  *  @see creq_HeaderLListNode_delist_header
  * @return Indicates if the procedure is finished properly.
