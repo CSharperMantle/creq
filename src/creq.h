@@ -200,7 +200,7 @@ typedef struct creq_Response
 
     // > header field
     creq_HeaderLListNode_t *list_head;
-    cvector_VECTOR(creq_HeaderField_t *) *header_vector;
+    cvector_VECTOR(creq_HeaderField_t *) header_vector;
     // line ending after each header
     // line ending again in the end
 
@@ -212,92 +212,25 @@ typedef struct creq_Response
 } creq_Response_t;
 
 /**
- * @brief Creates a new header list node which contains a header-value pair.
- *  @see creq_HeaderLListNode
+ * @brief Creates a new header-value pair.
  *  @see creq_HeaderField
  * @return A pointer to the newly created node.
  *  @retval NULL Fails to create a new object.
- * @attention DO NOT directly free the node unless it's not inserted into the list.
  * @attention For internal use only.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *)
-creq_HeaderLListNode_create(char *header, char *value);
+CREQ_PUBLIC(creq_HeaderField_t *)
+creq_HeaderField_create(char *header, char *value);
 
 /**
- * @brief Creates a new header list node which contains a header-value pair with literal header and value.
- *  @see creq_HeaderLListNode
+ * @brief Creates a new header-value pair with literal header and value.
  *  @see creq_HeaderField
  * @return A pointer to the newly created node.
  *  @retval NULL Fails to create a new object.
- * @attention DO NOT directly free the node unless it's not inserted into the list.
  * @attention For internal use only.
  * @attention Behaviour will be undefined if non-literals are given.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *)
-creq_HeaderLListNode_create_literal(const char *header_s, const char *value_s);
-
-/**
- * @brief Frees a previously-created HeaderLListNode.
- *  @see creq_HeaderLListNode_create
- * @return Indicates if the procedure is finished properly.
- *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
- *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @attention This procedure only frees the node, the data field, and the strings, set the prev and next pointers to NULL, and delete the object directly.
- * @attention For internal use only.
- * @see creq_HeaderLListNode
- * @see creq_HeaderField
- */
-CREQ_PUBLIC(creq_status_t)
-creq_HeaderLListNode_free(creq_HeaderLListNode_t *node);
-
-/**
- * @brief Search for a header-value pair in the headers list which contains the given header.
- * @return A pointer to the header found.
- *  @retval NULL Header not found.
- * @attention Always return the first one when there are multiple occurrences. To search for multiple header-value pairs, call this procedure iteratively with the last-found header as the head until NULL is returned.
- */
-CREQ_PUBLIC(creq_HeaderLListNode_t *)
-creq_HeaderLListNode_search_for_header(creq_HeaderLListNode_t *head, const char *header);
-
-/**
- * @brief Adds a new item to the tail of the given list.
- * @return Indicates if the procedure is finished properly.
- *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
- *  @retval CREQ_STATUS_FAILED Procedure fails.
- */
-CREQ_PUBLIC(creq_status_t)
-creq_HeaderLListNode_add_header(creq_HeaderLListNode_t **head, char *header, char *value);
-
-/**
- * @brief Adds a new item with literal header and value to the tail of the given list.
- * @return Indicates if the procedure is finished properly.
- *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
- *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @attention This function works with literal header and values. If non-literals are given, the result is undefined.
- */
-CREQ_PUBLIC(creq_status_t)
-creq_HeaderLListNode_add_header_literal(creq_HeaderLListNode_t **head, const char *header_s, const char *value_s);
-
-/**
- * @brief Moves a header node out of the list.
- * @return Indicates if the procedure is finished properly.
- *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
- *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @attention This procedure directly operates on the given node pointer.
- * @attention For internal use only.
- */
-CREQ_PUBLIC(creq_status_t)
-creq_HeaderLListNode_delist_header_direct(creq_HeaderLListNode_t **head, creq_HeaderLListNode_t *node);
-
-/**
- * @brief Moves a header from the headers list which has the given header out of the list. Alternative to creq_HeaderLListNode_delist_header_direct.
- *  @see creq_HeaderLListNode_delist_header_direct
- * @return A pointer to the removed header for further process.
- *  @retval NULL Header not found.
- * @attention Always delete the first header found in the list. To delete multiple header-value pairs, call this procedure iteratively until NULL is returned.
- */
-CREQ_PUBLIC(creq_HeaderLListNode_t *)
-creq_HeaderLListNode_delist_header(creq_HeaderLListNode_t **head, char *header);
+CREQ_PUBLIC(creq_HeaderField_t *)
+creq_HeaderField_create_literal(const char *header_s, const char *value_s);
 
 /**
  * @brief Frees a previously-created creq_HeaderField.
@@ -607,7 +540,7 @@ creq_Response_add_header_literal(creq_Response_t *resp, const char *header_s, co
  *  @retval NULL Header not found.
  * @attention Always return the first one when there are multiple occurrences. To search for multiple header-value pairs, call this procedure iteratively with the last-found header as the head until NULL is returned.
  */
-CREQ_PUBLIC(creq_HeaderLListNode_t *) creq_Response_search_for_header(creq_Response_t *resp, char *header);
+CREQ_PUBLIC(creq_HeaderField_t *) creq_Response_search_for_header(creq_Response_t *resp, char *header);
 
 /**
  * @brief Moves the header with the given header name out of the creq_Response object's headers list and frees it.
@@ -628,7 +561,7 @@ CREQ_PUBLIC(creq_status_t) creq_Response_remove_header(creq_Response_t *resp, ch
  * @see creq_Response_search_for_header
  * @attention Behaviour will be undefined if the given header is not in the list.
  */
-CREQ_PUBLIC(creq_status_t) creq_Response_remove_header_direct(creq_Response_t *resp, creq_HeaderLListNode_t *node);
+CREQ_PUBLIC(creq_status_t) creq_Response_remove_header_direct(creq_Response_t *resp, creq_HeaderField_t *node);
 
 /**
  * @brief Set the creq_Response object's message body to the given string.

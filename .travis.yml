@@ -1,12 +1,14 @@
 language: c
 jobs:
   include:
-    - name: "Linux gcc C"
+    - name: "Bionic gcc C"
       os: linux
+      dist: bionic
       compiler: gcc
       env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles" TEST_EXE_NAME="src/creq_test"
-    - name: "Linux clang C"
+    - name: "Bionic clang C"
       os: linux
+      dist: bionic
       compiler: clang
       env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles" TEST_EXE_NAME="src/creq_test"
 

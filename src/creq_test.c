@@ -14,7 +14,11 @@ void _creqtest_print_good(char *str);
 
 void _creqtest_print_bad(char *str);
 
-#define _creqtest_assert(expr) { assert(expr); _creqtest_print_good("assert (" #expr ") finished"); }
+#define _creqtest_assert(expr)                                                                                         \
+    {                                                                                                                  \
+        assert(expr);                                                                                                  \
+        _creqtest_print_good("assert (" #expr ") finished");                                                           \
+    }
 
 int main(int argc, char *argv[])
 {
