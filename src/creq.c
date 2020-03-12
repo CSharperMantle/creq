@@ -276,6 +276,7 @@ creq_Request_free(creq_Request_t *req)
             creq_HeaderField_free(&pHeader);
             szNowSize = cvector_size(req->header_vector);
         }
+        cvector_free(req->header_vector);
         // finally
         free(req);
         return CREQ_STATUS_SUCC;
@@ -673,6 +674,7 @@ creq_Response_free(creq_Response_t *resp)
             creq_HeaderField_free(&pHeader);
             szNowSize = cvector_size(resp->header_vector);
         }
+        cvector_free(resp->header_vector);
         // finally
         free(resp);
         return CREQ_STATUS_SUCC;
