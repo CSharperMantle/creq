@@ -8,11 +8,11 @@
 #include <assert.h>
 #include "creq.h"
 
-void _creqtest_print_status(char *str);
+static void _creqtest_print_status(char *str);
 
-void _creqtest_print_good(char *str);
+static void _creqtest_print_good(char *str);
 
-void _creqtest_print_bad(char *str);
+static void _creqtest_print_bad(char *str);
 
 #define _creqtest_assert(expr)                                                                                         \
     {                                                                                                                  \
