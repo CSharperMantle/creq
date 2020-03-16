@@ -20,7 +20,9 @@
         "cvector.h": "c",
         "cstdio": "c",
         "assert.h": "c",
-        "features.h": "c"
+        "features.h": "c",
+        "*.tcc": "c",
+        "random": "c"
     },
     "cSpell.words": [
         "cmake",

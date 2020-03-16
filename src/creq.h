@@ -77,6 +77,10 @@ if (ptr != NULL)                                                                
 #include <stdbool.h>
 #include <wchar.h>
 
+/**
+ * @brief Line ending styles used in request/response generation.
+ * @see creq_Config_t
+ */
 typedef enum creq_LineEnding_e
 {
     LE_CR,
@@ -84,6 +88,11 @@ typedef enum creq_LineEnding_e
     LE_CRLF
 } creq_LineEnding_t;
 
+/**
+ * @brief Pre-defined HTTP methods.
+ * @note These values only cover methods defined in RFC7321 Section 4. Users can add more methods as they wish.
+ * @see RFC7321 Section 4
+ */
 typedef enum creq_HttpMethod_e
 {
     METH_GET,
@@ -97,6 +106,12 @@ typedef enum creq_HttpMethod_e
     _METH_UNKNOWN
 } creq_HttpMethod_t;
 
+/**
+ * @brief Config types used in object creation.
+ * @see creq_Config_t
+ * @see creq_Request_t
+ * @see creq_Response_t
+ */
 typedef enum creq_ConfigType_e
 {
     CONF_REQUEST,
@@ -105,6 +120,7 @@ typedef enum creq_ConfigType_e
 
 /**
  * @brief Represents a single header-value pair used in request and response.
+ * @attention Manually editing these fields is not encouraged. Poorly-set values may cause use-after-free situation and/or crashes.
  */
 typedef struct creq_HeaderField
 {
@@ -135,6 +151,9 @@ typedef struct creq_Config
     creq_ConfigType_t config_type;
 } creq_Config_t;
 
+/**
+ * @brief HTTP version struct.
+ */
 typedef struct creq_HttpVersion
 {
     unsigned major;
