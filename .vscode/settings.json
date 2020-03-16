@@ -27,6 +27,8 @@
         "creq",
         "creqtest",
         "cvector",
+        "doxygen",
+        "graphviz",
         "htab",
         "llvm",
         "makefiles",

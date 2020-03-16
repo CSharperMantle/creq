@@ -12,11 +12,15 @@ jobs:
       compiler: clang
       env: MAKE="make" CMAKE_GENERATOR="Unix Makefiles" TEST_EXE_NAME="src/creq_test"
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y install doxygen graphviz
+
 before_script:
   - cmake --version
   - mkdir build
   - cd build
-  - cmake -B . -S $TRAVIS_BUILD_DIR
+  - cmake -B . -S $TRAVIS_BUILD_DIR -DBUILD_DOCUMENTATION=true
 
 script:
   - $MAKE all
