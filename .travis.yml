@@ -21,3 +21,4 @@ before_script:
 script:
   - $MAKE all
   - $TRAVIS_BUILD_DIR/build/$TEST_EXE_NAME
+  - $MAKE doc

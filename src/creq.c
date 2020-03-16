@@ -649,7 +649,6 @@ creq_Response_create(creq_Config_t *conf)
     pResponse->is_reason_phrase_literal = false;
     pResponse->message_body = NULL;
     pResponse->is_message_body_literal = false;
-    pResponse->list_head = NULL;
     pResponse->header_vector = NULL;
 
     return pResponse;

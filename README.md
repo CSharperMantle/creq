@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/CSharperMantle/creq.svg?branch=master)](https://travis-ci.com/CSharperMantle/creq)
 
-**C** **Req**uest/Response Generator: An elegant way to generate HTTP/1.x messages in C
+C REQuest/response generator: An elegant way to generate HTTP/1.x messages in C
 
 ## License
 
