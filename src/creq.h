@@ -60,10 +60,28 @@ then using the CREQ_API_VISIBILITY flag to "export" the same symbols the way CRE
 #endif
 #endif
 
+/**
+ * @brief Type for return values used when a function needs an error-indicating returning.
+ * @see CREQ_STATUS_SUCC
+ * @see CREQ_STATUS_FAILED
+ */
 typedef int creq_status_t;
+
+/**
+ * @brief Value stands for a successful execution of a function.
+ */
 #define CREQ_STATUS_SUCC 0
+
+/**
+ * @brief Value stands for an unsuccessful execution of a function.
+ * @note When a function return this value, check the calling function's docs for detailed error handling.
+ */
 #define CREQ_STATUS_FAILED 1
 
+/**
+ * @brief Function-like marco for easy access to freeing a pointer with NULL-checks.
+ * @attention This marco is intended for internal-uses only. Use this marco iff the pointer is malloced.
+ */
 #define CREQ_GUARDED_FREE(ptr)                                                                                         \
 if (ptr != NULL)                                                                                                   \
 {                                                                                                                  \

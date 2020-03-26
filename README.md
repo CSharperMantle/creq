@@ -2,11 +2,16 @@
 
 [![Build Status](https://travis-ci.com/CSharperMantle/creq.svg?branch=master)](https://travis-ci.com/CSharperMantle/creq)
 
-C REQuest/response generator: An elegant way to generate HTTP/1.x messages in C
+creq: An elegant way to generate HTTP/1.x messages in C
 
-## License
 
-Copyright (C) 2020  CSharperMantle
+## Introduction
+
+[creq](https://github.com/CSharperMantle/creq) is a library which allows you to create HTTP/1.x message strings at your own wishes. It provides easy-to-use Object-like APIs. With high performance and adjustable memory usage, it can be used in low-profile MCUs, such as Arduino(AVR) and ESP-series.
+
+## License: GNU GPLv3
+
+Copyright (C) 2020 CSharperMantle
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
