@@ -38,4 +38,4 @@ if(BUILD_DOCUMENTATION)
 
 endif()
 
-# install target in src/CMakeLists for <3.12 compatibility
+# install target in src/CMakeLists for <3.12 compatibility - OMITTED
