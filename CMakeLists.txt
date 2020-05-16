@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13.0)
+cmake_minimum_required(VERSION 3.0.0)
 project(creq
     VERSION 0.1.6.1
     LANGUAGES C 
@@ -38,6 +38,4 @@ if(BUILD_DOCUMENTATION)
 
 endif()
 
-install(TARGETS creq
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${CMAKE_PROJECT_NAME})
+# install target in src/CMakeLists for <3.12 compatibility
