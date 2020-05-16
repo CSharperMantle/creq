@@ -18,6 +18,7 @@ before_install:
 
 before_script:
   - cmake --version
+  - doxygen -v
   - mkdir build
   - cd build
   - cmake -B . -S $TRAVIS_BUILD_DIR -DBUILD_DOCUMENTATION=true
