@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(creq VERSION 0.1.6.1 DESCRIPTION "An elegant way to generate HTTP/1.x messages in C")
+project(creq
+    VERSION 0.1.6.1
+    LANGUAGES C 
+    DESCRIPTION "An elegant way to generate HTTP/1.x messages in C")
 find_package(Doxygen)
 
 add_subdirectory(lib)
 add_subdirectory(src)
 
+include(InstallRequiredSystemLibraries)
 set(CPACK_PROJECT_NAME ${CMAKE_PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${CMAKE_PROJECT_VERSION})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 include(CPack)
 
 set(CMAKE_C_FLAGS_DEBUG "-std=c11 -Wall -Wextra -Og -g")
@@ -32,3 +37,7 @@ if(BUILD_DOCUMENTATION)
         VERBATIM)
 
 endif()
+
+install(TARGETS creq
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${CMAKE_PROJECT_NAME})

@@ -538,9 +538,9 @@ creq_Request_set_message_body_literal(creq_Request_t *req, const char *msg_s)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_set_message_body_literal_content_len(creq_Request_t *req, const char *msg)
+creq_Request_set_message_body_literal_content_len(creq_Request_t *req, const char *msg_s)
 {
-    if (creq_Request_set_message_body_literal(req, msg) == CREQ_STATUS_FAILED)
+    if (creq_Request_set_message_body_literal(req, msg_s) == CREQ_STATUS_FAILED)
     {
         return CREQ_STATUS_FAILED;
     }
@@ -928,9 +928,9 @@ creq_Response_set_message_body_literal(creq_Response_t *resp, const char *msg_s)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Response_set_message_body_literal_content_len(creq_Response_t *resp, const char *msg)
+creq_Response_set_message_body_literal_content_len(creq_Response_t *resp, const char *msg_s)
 {
-    if (creq_Response_set_message_body_literal(resp, msg) == CREQ_STATUS_FAILED)
+    if (creq_Response_set_message_body_literal(resp, msg_s) == CREQ_STATUS_FAILED)
     {
         return CREQ_STATUS_FAILED;
     }
