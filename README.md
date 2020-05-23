@@ -14,7 +14,7 @@ creq: An elegant way to generate HTTP/1.x messages in C
 
 ## License: GNU GPLv3
 
-Copyright (C) 2020 Bao "Mantle" Rong 
+Copyright (c) 2020 Bao "Mantle" Rong 
 <br>
 Copyright (c) 2015 Evan Teran
 

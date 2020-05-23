@@ -27,3 +27,20 @@ script:
   - $MAKE all
   - $TRAVIS_BUILD_DIR/build/$TEST_EXE_NAME
   - $MAKE doc
+
+before_deploy:
+  - cd $TRAVIS_BUILD_DIR/
+  - mkdir release
+  - cp src/creq.c release/creq.c
+  - cp src/creq.h release/creq.h
+  - cp lib/c-vector/c-vector.h release/c-vector.h
+  - cp lib/c-vector/c-vector.c release/c-vector.c
+  - zip -q -r release.zip release/*
+
+deploy:
+  provider: releases
+  api_key: ${GITHUB_TOKEN}
+  file: "release.zip"
+  skip_cleanup: true
+  on:
+    tags: true
