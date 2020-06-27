@@ -35,7 +35,9 @@ before_deploy:
 deploy:
   provider: releases
   api_key: ${GITHUB_TOKEN}
-  file: "creq-release.tar.gz"
+  file:
+    - "creq-release.zip"
+    - "creq-release.tar.gz"
   skip_cleanup: true
   on:
     tags: true
