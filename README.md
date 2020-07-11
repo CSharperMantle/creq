@@ -8,9 +8,17 @@ creq: An elegant way to generate HTTP/1.x messages in C
 
 [creq](https://github.com/CSharperMantle/creq) is a library written in pure C, which allows you to create HTTP/1.x message strings at your own wishes with easy-to-use object-like APIs. With high performance and adjustable memory usage, creq can be used in low-profile MCUs, such as Arduino(AVR) and ESP-series.
 
+## Features & TODOs
+
+- [x] Customizable request/response generation
+- [x] Safe & tweakable memory management
+- [x] Great portability
+- [ ] Integrated message syntax validator
+- [x] User-friendly object-like interface
+
 ## Installation
 
-
+TODO.
 
 ## License: GNU GPLv3
 
