@@ -92,6 +92,7 @@ if (ptr != NULL)                                                                
 #define CVECTOR_LOGARITHMIC_GROWTH
 
 #include "cvector.h"
+#include <inttypes.h>
 #include <stdbool.h>
 #include <wchar.h>
 
@@ -307,24 +308,15 @@ CREQ_PUBLIC(creq_HttpMethod_t) creq_Request_get_http_method(creq_Request_t *req)
 /**
  * @brief Set the creq_Request object's target to the given string.
  * @param[in] requestTarget The pointer to the new target. NULL will clear the target.
+ * @param[in] is_literal true if 'requestTarget' is a string literal.
+ * @see creq_Request_add_header()
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This procedure stores a copy of the given string.
  * @see creq_Request_t::request_target
  */
-CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, char *requestTarget);
-
-/**
- * @brief Set the creq_Request object's target to the given literal.
- * @param[in] requestTarget_s The pointer to the new target. NULL will clear the target.
- * @return Indicates if the procedure is finished properly.
- *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
- *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @attention This procedure stores the pointer to the literal directly. Behaviour will be undefined if non-literals are given.
- * @see creq_Request_t::request_target
- */
-CREQ_PUBLIC(creq_status_t) creq_Request_set_target_literal(creq_Request_t *req, const char *requestTarget_s);
+CREQ_PUBLIC(creq_status_t) creq_Request_set_target(creq_Request_t *req, char *requestTarget, bool is_literal);
 
 /**
  * @brief Get the creq_Request object's target
@@ -351,20 +343,13 @@ CREQ_PUBLIC(creq_HttpVersion_t) creq_Request_get_http_version(creq_Request_t *re
 
 /**
  * @brief Adds a new item to the tail of the headers list of the creq_Request object.
+ * @param[in] is_literal true if 'header' and 'value' are string literals.
+ * @note The 'is_literal' param is useful if users want to handle strings manually. Normally, strings stored in the creq objects are pointers to copies of user-provided strings. Creq will not try to copy a 'literal'. Instead, the library stores the pointer directly because string literals are generated compile-time and will not change. Users can reduce the use of memory by setting 'is_literal' to true, but it is their responsibility to make sure that these 'literal's are always available when they are used.
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  */
-CREQ_PUBLIC(creq_status_t) creq_Request_add_header(creq_Request_t *req, char *header, char *value);
-
-/**
- * @brief Adds a new item with literal header and value to the tail of the headers list of the creq_Request object.
- * @return Indicates if the procedure is finished properly.
- *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
- *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @attention This function works with literal header and values. If non-literals are given, the result is undefined.
- */
-CREQ_PUBLIC(creq_status_t) creq_Request_add_header_literal(creq_Request_t *req, const char *header_s, const char *value_s);
+CREQ_PUBLIC(creq_status_t) creq_Request_add_header(creq_Request_t *req, char *header, char *value, bool is_literal);
 
 /**
  * @brief Searches for a header-value pair in the headers list of the creq_Request object which contains the given header.
@@ -405,44 +390,26 @@ CREQ_PUBLIC(creq_status_t) creq_Request_remove_header_direct(creq_Request_t *req
 /**
  * @brief Set the creq_Request object's message body to the given string.
  * @param[in] msg The pointer to the new message. NULL will clear the message.
+ * @param[in] is_literal true if 'msg' is a string literal.
+ * @see creq_Request_add_header()
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @attention This procedure stores a copy of the given string.
  * @see creq_Request_t::message_body
  */
-CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, char *msg);
-
-/**
- * @brief Set the creq_Request object's message body to the given literal.
- * @param[in] msg_s The pointer to the new message. NULL will clear the message.
- * @return Indicates if the procedure is finished properly.
- *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
- *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @attention This procedure stores the pointer to the literal directly. Behaviour will be undefined if non-literals are given.
- * @see creq_Request_t::message_body
- */
-CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_literal(creq_Request_t *req, const char *msg_s);
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, char *msg, bool is_literal);
 
 /**
  * @brief Set the creq_Request object's message body to the given string and update the Content-Length header.
  * @param[in] msg The pointer to the new message. NULL will clear the message.
+ * @param[in] is_literal true if 'msg' is a string literal.
+ * @see creq_Request_add_header()
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @see creq_Request_set_message_body
  */
-CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg);
-
-/**
- * @brief Set the creq_Request object's message body to the given literal and update the Content-Length header.
- * @param[in] msg_s The pointer to the new message. NULL will clear the message.
- * @return Indicates if the procedure is finished properly.
- *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
- *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @see creq_Request_set_message_body_literal
- */
-CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_literal_content_len(creq_Request_t *req, const char *msg_s);
+CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg, bool is_literal);
 
 /**
  * @brief Get the creq_Request object's message body.
@@ -466,7 +433,7 @@ CREQ_PUBLIC(char *) creq_Request_stringify(creq_Request_t *req);
  *  @retval NULL Fails to create a new object.
  * @attention Always use creq_Response_free when done.
  * @see creq_Response_t
- * @see creq_Response_free
+ * @see creq_Response_free()
  */
 CREQ_PUBLIC(creq_Response_t *) creq_Response_create(creq_Config_t *conf);
 
@@ -477,7 +444,7 @@ CREQ_PUBLIC(creq_Response_t *) creq_Response_create(creq_Config_t *conf);
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This procedure frees all the resources used in the given object, including all the items in the headers list. So make sure they are malloc'ed!
  * @see creq_Response_t
- * @see creq_Response_create
+ * @see creq_Response_create()
  */
 CREQ_PUBLIC(creq_status_t) creq_Response_free(creq_Response_t *resp);
 

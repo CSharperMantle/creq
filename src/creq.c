@@ -306,43 +306,33 @@ creq_Request_get_http_method(creq_Request_t *req)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_set_target(creq_Request_t *req, char *requestTarget)
+creq_Request_set_target(creq_Request_t *req, char *requestTarget, bool is_literal)
 {
     if (req == NULL || requestTarget == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
     if (!req->is_request_target_literal)
-        CREQ_GUARDED_FREE(
-            req->request_target); // has it been set previously? check it first, free it if necessary... if it is a malloc'ed string then free it.
-    if (requestTarget == NULL) // user requests to clear
-    {
-        req->request_target = NULL;
-        return CREQ_STATUS_SUCC;
-    }
-    // ...and then do what we are supposed to do :D
-    char *pReqTargetCopy = _creq_malloc_strcpy(requestTarget);
-    req->request_target = pReqTargetCopy;
-    req->is_request_target_literal = false; // this is not a immediate literal.
-    return CREQ_STATUS_SUCC;
-}
-
-CREQ_PUBLIC(creq_status_t)
-creq_Request_set_target_literal(creq_Request_t *req, const char *requestTarget_s)
-{
-    if (req == NULL || requestTarget_s == NULL)
-    {
-        return CREQ_STATUS_FAILED;
-    }
-    if (!req->is_request_target_literal)
         CREQ_GUARDED_FREE(req->request_target); // if it is a malloc'ed string then free it.
-    if (requestTarget_s == NULL)
+    if (requestTarget == NULL)
     {
         req->request_target = NULL;
         return CREQ_STATUS_SUCC;
     }
-    req->request_target = (char *)requestTarget_s; // this is a immediate literal value, store it.
-    req->is_request_target_literal = true;
+
+    if (is_literal)
+    {
+        req->request_target = (char *)requestTarget; // this is a immediate literal value, store it.
+        req->is_request_target_literal = true;
+    }
+    else
+    {
+
+        char *pReqTargetCopy = _creq_malloc_strcpy(requestTarget);
+        req->request_target = pReqTargetCopy;
+        req->is_request_target_literal = false; // this is not a immediate literal.
+    }
+
     return CREQ_STATUS_SUCC;
 }
 
@@ -384,26 +374,22 @@ creq_Request_get_http_version(creq_Request_t *req)
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_add_header(creq_Request_t *req, char *header, char *value)
+creq_Request_add_header(creq_Request_t *req, char *header, char *value, bool is_literal)
 {
     if (req == NULL || header == NULL || value == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    creq_HeaderField_t *pNewHeader = creq_HeaderField_create(header, value);
-    cvector_push_back(req->header_vector, pNewHeader);
-    return CREQ_STATUS_SUCC;
-}
-
-CREQ_PUBLIC(creq_status_t)
-creq_Request_add_header_literal(creq_Request_t *req, const char *header_s, const char *value_s)
-{
-    if (req == NULL || header_s == NULL || value_s == NULL)
+    if (is_literal)
     {
-        return CREQ_STATUS_FAILED;
+        creq_HeaderField_t *pNewHeader = creq_HeaderField_create_literal(header, value);
+        cvector_push_back(req->header_vector, pNewHeader);
     }
-    creq_HeaderField_t *pNewHeader = creq_HeaderField_create_literal(header_s, value_s);
-    cvector_push_back(req->header_vector, pNewHeader);
+    else
+    {
+        creq_HeaderField_t *pNewHeader = creq_HeaderField_create(header, value);
+        cvector_push_back(req->header_vector, pNewHeader);
+    }
     return CREQ_STATUS_SUCC;
 }
 
@@ -481,29 +467,44 @@ creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderField_t *heade
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_set_message_body(creq_Request_t *req, char *msg)
+creq_Request_set_message_body(creq_Request_t *req, char *msg, bool is_literal)
 {
     if (req == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
-    if (!req->is_message_body_literal)
-        CREQ_GUARDED_FREE(req->message_body);
-    if (msg == NULL)
+    if (is_literal)
     {
-        req->message_body = NULL;
-        return CREQ_STATUS_SUCC;
+        if (!req->is_message_body_literal)
+            CREQ_GUARDED_FREE(req->message_body);
+        if (msg == NULL)
+        {
+            req->message_body = NULL;
+            return CREQ_STATUS_SUCC;
+        }
+        req->message_body = (char *)msg;
+        req->is_message_body_literal = true;
     }
-    char *pMsgCopy = _creq_malloc_strcpy(msg);
-    req->message_body = pMsgCopy;
-    req->is_message_body_literal = false;
+    else
+    {
+        if (!req->is_message_body_literal)
+            CREQ_GUARDED_FREE(req->message_body);
+        if (msg == NULL)
+        {
+            req->message_body = NULL;
+            return CREQ_STATUS_SUCC;
+        }
+        char *pMsgCopy = _creq_malloc_strcpy(msg);
+        req->message_body = pMsgCopy;
+        req->is_message_body_literal = false;
+    }
     return CREQ_STATUS_SUCC;
 }
 
 CREQ_PUBLIC(creq_status_t)
-creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg)
+creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg, bool is_literal)
 {
-    if (creq_Request_set_message_body(req, msg) == CREQ_STATUS_FAILED)
+    if (creq_Request_set_message_body(req, msg, is_literal) == CREQ_STATUS_FAILED)
     {
         return CREQ_STATUS_FAILED;
     }
@@ -513,44 +514,7 @@ creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg)
     int content_len_s_len = snprintf(NULL, 0, "%zd", content_len);
     content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
     snprintf(content_len_s, content_len_s_len + 1, "%zd", content_len);
-    creq_Request_add_header(req, "Content-Length", content_len_s);
-    CREQ_GUARDED_FREE(content_len_s);
-    return CREQ_STATUS_SUCC;
-}
-
-CREQ_PUBLIC(creq_status_t)
-creq_Request_set_message_body_literal(creq_Request_t *req, const char *msg_s)
-{
-    if (req == NULL)
-    {
-        return CREQ_STATUS_FAILED;
-    }
-    if (!req->is_message_body_literal)
-        CREQ_GUARDED_FREE(req->message_body);
-    if (msg_s == NULL)
-    {
-        req->message_body = NULL;
-        return CREQ_STATUS_SUCC;
-    }
-    req->message_body = (char *)msg_s;
-    req->is_message_body_literal = true;
-    return CREQ_STATUS_SUCC;
-}
-
-CREQ_PUBLIC(creq_status_t)
-creq_Request_set_message_body_literal_content_len(creq_Request_t *req, const char *msg_s)
-{
-    if (creq_Request_set_message_body_literal(req, msg_s) == CREQ_STATUS_FAILED)
-    {
-        return CREQ_STATUS_FAILED;
-    }
-    creq_Request_remove_header(req, "Content-Length");
-    size_t content_len = strlen(req->message_body);
-    char *content_len_s = NULL;
-    int content_len_s_len = snprintf(NULL, 0, "%zd", content_len);
-    content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
-    snprintf(content_len_s, content_len_s_len + 1, "%zd", content_len);
-    creq_Request_add_header(req, "Content-Length", content_len_s);
+    creq_Request_add_header(req, "Content-Length", content_len_s, false); // content_len_s is never a literal.
     CREQ_GUARDED_FREE(content_len_s);
     return CREQ_STATUS_SUCC;
 }

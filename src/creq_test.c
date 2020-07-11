@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
 #include "creq.h"
@@ -17,7 +18,7 @@ static void _creqtest_print_bad(char *str);
 #define _creqtest_assert(expr)                                                                                         \
     {                                                                                                                  \
         assert(expr);                                                                                                  \
-        _creqtest_print_good("assert (" #expr ") succeeded");                                                          \
+        _creqtest_print_good("Assertion (" #expr ") succeeded");                                                          \
     }
 
 int main(int argc, char *argv[])
@@ -36,12 +37,12 @@ int main(int argc, char *argv[])
     creq_Request_set_http_version(req, 1, 1);
     _creqtest_assert(req->http_version.major == 1);
     _creqtest_assert(req->http_version.minor == 1);
-    creq_Request_set_target_literal(req, "www.example.com");
-    creq_Request_add_header_literal(req, "Host", "www.example.com");
-    creq_Request_add_header_literal(req, "User-Agent", "creq/0.1.5.1");
-    creq_Request_add_header_literal(req, "Connection", "close");
+    creq_Request_set_target(req, "www.my-site.com", true);
+    creq_Request_add_header(req, "Host", "www.example.com", true);
+    creq_Request_add_header(req, "User-Agent", "creq/0.1.7", true);
+    creq_Request_add_header(req, "Connection", "close", true);
     _creqtest_assert(!strcmp(creq_Request_search_for_header(req, "Host")->field_value, "www.example.com"));
-    creq_Request_set_message_body_literal(req, "");
+    creq_Request_set_message_body(req, "", true);
     _creqtest_assert(!strcmp(creq_Request_get_message_body(req), ""));
     _creqtest_assert(req->is_message_body_literal == true);
     creq_Request_free(req);
@@ -50,26 +51,26 @@ int main(int argc, char *argv[])
     req = creq_Request_create(&req_conf);
     creq_Request_set_http_method(req, METH_POST);
     creq_Request_set_http_version(req, 1, 1);
-    creq_Request_set_target_literal(req, "www.my-site.com");
-    creq_Request_add_header_literal(req, "Host", "www.my-site.com");
-    creq_Request_add_header_literal(req, "User-Agent", "creq/0.1.5.1");
-    creq_Request_add_header_literal(req, "Connection", "close");
-    creq_Request_add_header_literal(req, "Bogus", "placeholder");
+    creq_Request_set_target(req, "www.my-site.com", true);
+    creq_Request_add_header(req, "Host", "www.my-site.com", true);
+    creq_Request_add_header(req, "User-Agent", "creq/0.1.7", true);
+    creq_Request_add_header(req, "Connection", "close", true);
+    creq_Request_add_header(req, "Bogus", "placeholder", true);
     creq_Request_remove_header(req, "Bogus");
     _creqtest_assert(creq_Request_search_for_header_index(req, "Bogus") == -1);
     _creqtest_assert(creq_Request_search_for_header(req, "Bogus") == NULL);
-    creq_Request_set_message_body_literal(req, "user=CSharperMantle&mood=happy");
+    creq_Request_set_message_body(req, "user=CSharperMantle&mood=happy", true);
     creq_Request_free(req);
 
     _creqtest_print_status("Now testing automatic Content-Length calculation (no replacement)");
     req = creq_Request_create(&req_conf);
     creq_Request_set_http_method(req, METH_POST);
     creq_Request_set_http_version(req, 1, 1);
-    creq_Request_set_target_literal(req, "www.my-site.com");
-    creq_Request_add_header_literal(req, "Host", "www.my-site.com");
-    creq_Request_add_header_literal(req, "User-Agent", "creq/0.1.5.1");
-    creq_Request_add_header_literal(req, "Connection", "close");
-    creq_Request_set_message_body_literal_content_len(req, "user=CSharperMantle&mood=happy");
+    creq_Request_set_target(req, "www.my-site.com", true);
+    creq_Request_add_header(req, "Host", "www.my-site.com", true);
+    creq_Request_add_header(req, "User-Agent", "creq/0.1.7", true);
+    creq_Request_add_header(req, "Connection", "close", true);
+    creq_Request_set_message_body_content_len(req, "user=CSharperMantle&mood=happy", true);
     _creqtest_assert(creq_Request_search_for_header(req, "Content-Length")->field_value != NULL);
     _creqtest_assert(!strcmp(creq_Request_search_for_header(req, "Content-Length")->field_value, "30"));
     creq_Request_free(req);
@@ -78,12 +79,12 @@ int main(int argc, char *argv[])
     req = creq_Request_create(&req_conf);
     creq_Request_set_http_method(req, METH_POST);
     creq_Request_set_http_version(req, 1, 1);
-    creq_Request_set_target_literal(req, "www.my-site.com");
-    creq_Request_add_header_literal(req, "Host", "www.my-site.com");
-    creq_Request_add_header_literal(req, "User-Agent", "creq/0.1.5.1");
-    creq_Request_add_header_literal(req, "Content-Length", "15");
-    creq_Request_add_header_literal(req, "Connection", "close");
-    creq_Request_set_message_body_literal_content_len(req, "user=CSharperMantle&status=🚗");
+    creq_Request_set_target(req, "www.my-site.com", true);
+    creq_Request_add_header(req, "Host", "www.my-site.com", true);
+    creq_Request_add_header(req, "User-Agent", "creq/0.1.7", true);
+    creq_Request_add_header(req, "Content-Length", "15", true);
+    creq_Request_add_header(req, "Connection", "close", true);
+    creq_Request_set_message_body_content_len(req, "user=CSharperMantle&status=🚗", true);
     _creqtest_assert(creq_Request_search_for_header(req, "Content-Length")->field_value != NULL);
     _creqtest_assert(!strcmp(creq_Request_search_for_header(req, "Content-Length")->field_value, "31"));
     creq_Request_free(req);
