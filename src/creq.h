@@ -19,17 +19,17 @@ extern "C"
 #ifdef __WINDOWS__
 
 /* When compiling for windows, we specify a specific calling convention to avoid issues where we are being called from a project with a different default calling convention.  For windows you have 3 define options:
-CREQ_HIDE_SYMBOLS - Define this in the case where you don't want to ever dllexport symbols
-CREQ_EXPORT_SYMBOLS - Define this on library build when you want to dllexport symbols (default)
-CREQ_IMPORT_SYMBOLS - Define this if you want to dllimport symbol
-For Unix builds that support visibility attribute, you can define similar behavior by
-setting default visibility to hidden by adding
--fvisibility=hidden (for gcc)
-or
--xldscope=hidden (for sun cc)
-to CFLAGS
-then using the CREQ_API_VISIBILITY flag to "export" the same symbols the way CREQ_EXPORT_SYMBOLS does
-*/
+ * CREQ_HIDE_SYMBOLS - Define this in the case where you don't want to ever dllexport symbols
+ * CREQ_EXPORT_SYMBOLS - Define this on library build when you want to dllexport symbols (default)
+ * CREQ_IMPORT_SYMBOLS - Define this if you want to dllimport symbol
+ * For Unix builds that support visibility attribute, you can define similar behavior by
+ * setting default visibility to hidden by adding
+ * -fvisibility=hidden (for gcc)
+ * or
+ * -xldscope=hidden (for sun cc)
+ * to CFLAGS
+ * then using the CREQ_API_VISIBILITY flag to "export" the same symbols the way CREQ_EXPORT_SYMBOLS does
+ */
 
 #define CREQ_CDECL __cdecl
 #define CREQ_STDCALL __stdcall
@@ -273,7 +273,7 @@ CREQ_PUBLIC(creq_status_t) creq_HeaderField_free(creq_HeaderField_t **ptrToField
  * @return A pointer to the newly created creq_Request object.
  *  @retval NULL Fails to create a new object.
  * @attention Always use creq_Request_free when done.
- * @see creq_Request_free
+ * @see creq_Request_free()
  * @see creq_Request_t
  */
 CREQ_PUBLIC(creq_Request_t *) creq_Request_create(creq_Config_t *conf);
@@ -286,7 +286,7 @@ CREQ_PUBLIC(creq_Request_t *) creq_Request_create(creq_Config_t *conf);
  * @attention This procedure frees all the resources used in the given object, including all the items in the headers list.
  * @attention So make sure they are malloc'ed!
  * @see creq_Request_t
- * @see creq_Request_create
+ * @see creq_Request_create()
  */
 CREQ_PUBLIC(creq_status_t) creq_Request_free(creq_Request_t *req);
 
@@ -373,7 +373,7 @@ CREQ_PUBLIC(int) creq_Request_search_for_header_index(creq_Request_t *req, char 
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention Always delete the first header found in the list.
- * @see creq_HeaderField_free
+ * @see creq_HeaderField_free()
  */
 CREQ_PUBLIC(creq_status_t) creq_Request_remove_header(creq_Request_t *req, char *header);
 
@@ -383,7 +383,7 @@ CREQ_PUBLIC(creq_status_t) creq_Request_remove_header(creq_Request_t *req, char 
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This procedure directly operates on the given pointer. Often used with creq_Request_search_for_header.
- * @see creq_Request_search_for_header
+ * @see creq_Request_search_for_header()
  */
 CREQ_PUBLIC(creq_status_t) creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderField_t *node);
 
@@ -407,7 +407,7 @@ CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body(creq_Request_t *req, ch
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @see creq_Request_set_message_body
+ * @see creq_Request_set_message_body()
  */
 CREQ_PUBLIC(creq_status_t) creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg, bool is_literal);
 
@@ -554,7 +554,7 @@ CREQ_PUBLIC(creq_status_t) creq_Response_remove_header(creq_Response_t *resp, ch
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
  * @attention This procedure directly operates on the given node pointer. Often used with creq_Response_search_for_header .
- * @see creq_Response_search_for_header
+ * @see creq_Response_search_for_header()
  */
 CREQ_PUBLIC(creq_status_t) creq_Response_remove_header_direct(creq_Response_t *resp, creq_HeaderField_t *node);
 
@@ -586,7 +586,7 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_literal(creq_Response_
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @see creq_Response_set_message_body
+ * @see creq_Response_set_message_body()
  */
 CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_content_len(creq_Response_t *resp, char *msg);
 
@@ -596,7 +596,7 @@ CREQ_PUBLIC(creq_status_t) creq_Response_set_message_body_content_len(creq_Respo
  * @return Indicates if the procedure is finished properly.
  *  @retval CREQ_STATUS_SUCC Procedure finishes successfully.
  *  @retval CREQ_STATUS_FAILED Procedure fails.
- * @see creq_Response_set_message_body_literal
+ * @see creq_Response_set_message_body_literal()
  */
 CREQ_PUBLIC(creq_status_t)
 creq_Response_set_message_body_literal_content_len(creq_Response_t *resp, const char *msg_s);

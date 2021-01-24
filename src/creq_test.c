@@ -18,7 +18,7 @@ static void _creqtest_print_bad(char *str);
 #define _creqtest_assert(expr)                                                                                         \
     {                                                                                                                  \
         assert(expr);                                                                                                  \
-        _creqtest_print_good("Assertion (" #expr ") succeeded");                                                          \
+        _creqtest_print_good("Assertion (" #expr ") succeeded");                                                       \
     }
 
 int main(int argc, char *argv[])
@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
     creq_Request_add_header(req, "User-Agent", "creq/0.1.7", true);
     creq_Request_add_header(req, "Connection", "close", true);
     _creqtest_assert(!strcmp(creq_Request_search_for_header(req, "Host")->field_value, "www.example.com"));
+    _creqtest_assert(creq_Request_search_for_header(req, "Host")->is_field_value_literal == true);
     creq_Request_set_message_body(req, "", true);
     _creqtest_assert(!strcmp(creq_Request_get_message_body(req), ""));
     _creqtest_assert(req->is_message_body_literal == true);

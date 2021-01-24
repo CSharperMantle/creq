@@ -16,11 +16,20 @@ creq: An elegant way to generate HTTP/1.x messages in C
 - [ ] Integrated message syntax validator
 - [x] User-friendly object-like interface
 
-## Installation
+## Symbol accessibility note
 
-TODO.
+When compiling for windows, we specify a specific calling convention to avoid issues where we are being called from a project with a different default calling convention. For windows you have 3 define options:
+* `CREQ_HIDE_SYMBOLS` - Define this in the case where you don't want to ever `dllexport` symbols
+* `CREQ_EXPORT_SYMBOLS` - Define this on library build when you want to `dllexport` symbols (default)
+* `CREQ_IMPORT_SYMBOLS` - Define this if you want to `dllimport` symbol
 
-## License: GNU GPLv3
+For Unix builds that support visibility attribute, you can define similar behavior by setting default visibility to hidden by adding
+* `-fvisibility=hidden` (for gcc)
+* `-xldscope=hidden` (for sun cc)
+
+to `CFLAGS`, then using the `CREQ_API_VISIBILITY` flag to "export" the same symbols the way `CREQ_EXPORT_SYMBOLS` does
+
+## License
 
 Copyright (c) 2020 Bao "Mantle" Rong 
 <br>
