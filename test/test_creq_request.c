@@ -1,9 +1,3 @@
-#ifdef NDEBUG
-#undef NDEBUG
-#endif /* NDEBUG */
-
-#include <stdlib.h>
-#include <stdbool.h>
 #include "creq.h"
 #include "unity.h"
 
