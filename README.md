@@ -1,10 +1,8 @@
-# creq
+# creq ![CMake](https://github.com/CSharperMantle/creq/workflows/CMake/badge.svg)
 
-[![Build Status](https://travis-ci.com/CSharperMantle/creq.svg?branch=master)](https://travis-ci.com/CSharperMantle/creq)
+**An elegant way to generate HTTP/1.x messages in C**
 
-creq: An elegant way to generate HTTP/1.x messages in C
-
-## One-line introduction
+## Introduction
 
 [creq](https://github.com/CSharperMantle/creq) is a library written in pure C, which allows you to create HTTP/1.x message strings at your own wishes with easy-to-use object-like APIs. With high performance and adjustable memory usage, creq can be used in low-profile MCUs, such as Arduino(AVR) and ESP-series.
 
@@ -13,10 +11,10 @@ creq: An elegant way to generate HTTP/1.x messages in C
 - [x] Customizable request/response generation
 - [x] Safe & tweakable memory management
 - [x] Great portability
-- [ ] Integrated message syntax validator
 - [x] User-friendly object-like interface
+- [ ] Integrated message syntax validator
 
-## Symbol accessibility note
+## Symbol accessibility
 
 When compiling for windows, we specify a specific calling convention to avoid issues where we are being called from a project with a different default calling convention. For windows you have 3 define options:
 * `CREQ_HIDE_SYMBOLS` - Define this in the case where you don't want to ever `dllexport` symbols
