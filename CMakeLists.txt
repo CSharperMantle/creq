@@ -19,6 +19,10 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(src)
 
+include(CTest)
+add_subdirectory(unity) 
+add_subdirectory(test) 
+
 set(CMAKE_C_FLAGS_DEBUG "-std=c11 -Wall -Wextra -Og -g")
 set(CMAKE_C_FLAGS_RELEASE "-std=c11 -Wall -Wextra -O3")
 
