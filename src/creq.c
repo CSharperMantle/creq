@@ -4,7 +4,7 @@
  * @author CSharperMantle
  */
 
-// for portability consideration, try to make hacks to use %zd format for size_t
+// for portability consideration, try to make hacks to use %zu format for size_t
 #if defined(__MINGW32__) || defined(__MINGW64__)
 #define __USE_MINGW_ANSI_STDIO 1
 #endif // defined(__MINGW32__) || defined (__MINGW64__)
@@ -308,7 +308,7 @@ creq_Request_get_http_method(creq_Request_t *req)
 CREQ_PUBLIC(creq_status_t)
 creq_Request_set_target(creq_Request_t *req, char *requestTarget, bool is_literal)
 {
-    if (req == NULL || requestTarget == NULL)
+    if (req == NULL)
     {
         return CREQ_STATUS_FAILED;
     }
@@ -511,9 +511,9 @@ creq_Request_set_message_body_content_len(creq_Request_t *req, char *msg, bool i
     creq_Request_remove_header(req, "Content-Length");
     size_t content_len = strlen(req->message_body);
     char *content_len_s = NULL;
-    int content_len_s_len = snprintf(NULL, 0, "%zd", content_len);
+    int content_len_s_len = snprintf(NULL, 0, "%zu", content_len);
     content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
-    snprintf(content_len_s, content_len_s_len + 1, "%zd", content_len);
+    snprintf(content_len_s, content_len_s_len + 1, "%zu", content_len);
     creq_Request_add_header(req, "Content-Length", content_len_s, false); // content_len_s is never a literal.
     CREQ_GUARDED_FREE(content_len_s);
     return CREQ_STATUS_SUCC;
@@ -864,9 +864,9 @@ creq_Response_set_message_body_content_len(creq_Response_t *resp, char *msg)
     creq_Response_remove_header(resp, "Content-Length");
     size_t content_len = strlen(resp->message_body);
     char *content_len_s = NULL;
-    int content_len_s_len = snprintf(NULL, 0, "%zd", content_len);
+    int content_len_s_len = snprintf(NULL, 0, "%zu", content_len);
     content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
-    snprintf(content_len_s, content_len_s_len + 1, "%zd", content_len);
+    snprintf(content_len_s, content_len_s_len + 1, "%zu", content_len);
     creq_Response_add_header(resp, "Content-Length", content_len_s);
     CREQ_GUARDED_FREE(content_len_s);
     return CREQ_STATUS_SUCC;
@@ -901,9 +901,9 @@ creq_Response_set_message_body_literal_content_len(creq_Response_t *resp, const 
     creq_Response_remove_header(resp, "Content-Length");
     size_t content_len = strlen(resp->message_body);
     char *content_len_s = NULL;
-    int content_len_s_len = snprintf(NULL, 0, "%zd", content_len);
+    int content_len_s_len = snprintf(NULL, 0, "%zu", content_len);
     content_len_s = (char *)_creq_malloc_n_init(sizeof(char) * (content_len_s_len + 1));
-    snprintf(content_len_s, content_len_s_len + 1, "%zd", content_len);
+    snprintf(content_len_s, content_len_s_len + 1, "%zu", content_len);
     creq_Response_add_header(resp, "Content-Length", content_len_s);
     CREQ_GUARDED_FREE(content_len_s);
     return CREQ_STATUS_SUCC;

@@ -1,9 +1,20 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.10.0)
 project(creq
     VERSION 0.1.6.3
     LANGUAGES C 
     DESCRIPTION "An elegant way to generate HTTP/1.x messages in C")
+
 find_package(Doxygen)
+find_program(CMAKE_C_CPPCHECK NAMES cppcheck)
+if (CMAKE_C_CPPCHECK)
+    list(
+        APPEND CMAKE_C_CPPCHECK 
+            "--enable=performance,portability,style"
+            "--inconclusive"
+            "--force" 
+            "--inline-suppr"
+    )
+endif()
 
 add_subdirectory(lib)
 add_subdirectory(src)

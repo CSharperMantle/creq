@@ -385,7 +385,7 @@ CREQ_PUBLIC(creq_status_t) creq_Request_remove_header(creq_Request_t *req, char 
  * @attention This procedure directly operates on the given pointer. Often used with creq_Request_search_for_header.
  * @see creq_Request_search_for_header()
  */
-CREQ_PUBLIC(creq_status_t) creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderField_t *node);
+CREQ_PUBLIC(creq_status_t) creq_Request_remove_header_direct(creq_Request_t *req, creq_HeaderField_t *header);
 
 /**
  * @brief Set the creq_Request object's message body to the given string.
@@ -556,7 +556,7 @@ CREQ_PUBLIC(creq_status_t) creq_Response_remove_header(creq_Response_t *resp, ch
  * @attention This procedure directly operates on the given node pointer. Often used with creq_Response_search_for_header .
  * @see creq_Response_search_for_header()
  */
-CREQ_PUBLIC(creq_status_t) creq_Response_remove_header_direct(creq_Response_t *resp, creq_HeaderField_t *node);
+CREQ_PUBLIC(creq_status_t) creq_Response_remove_header_direct(creq_Response_t *resp, creq_HeaderField_t *header);
 
 /**
  * @brief Set the creq_Response object's message body to the given string.
