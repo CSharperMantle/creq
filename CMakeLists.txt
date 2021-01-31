@@ -13,6 +13,7 @@ if (CMAKE_C_CPPCHECK)
             "--inconclusive"
             "--force" 
             "--inline-suppr"
+            "--suppress=*:unity/*"
     )
 endif()
 
