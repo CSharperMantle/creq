@@ -48,7 +48,8 @@ jobs:
 
   doc:
     runs-on: ubuntu-20.04
-
+    needs: [ build ]
+    
     steps:
     - uses: actions/checkout@v2
 
