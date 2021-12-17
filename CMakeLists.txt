@@ -24,6 +24,7 @@ endif()
 # Project-wide constants
 set(include_dest "include/${CMAKE_PROJECT_NAME}-${PROJECT_VERSION}")
 set(main_lib_dest "lib/${CMAKE_PROJECT_NAME}-${PROJECT_VERSION}")
+set(lib_dest "${main_lib_dest}/${CMAKE_BUILD_TYPE}")
 
 # Project file structure
 add_subdirectory(lib)

@@ -1,5 +1,4 @@
 include_directories("${PROJECT_SOURCE_DIR}/src/")
-include_directories("${PROJECT_SOURCE_DIR}/lib/c-vector")
 
 # Target: tests for requests
 add_executable(test_creq_request_app test_creq_request.c)
