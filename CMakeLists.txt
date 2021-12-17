@@ -1,31 +1,46 @@
 cmake_minimum_required(VERSION 3.10.0)
 project(creq
-    VERSION 0.1.6.3
+    VERSION 0.2.0.0
     LANGUAGES C 
     DESCRIPTION "An elegant way to generate HTTP/1.x messages in C")
 
+# Compile environment dependencies
 find_package(Doxygen)
-find_program(CMAKE_C_CPPCHECK NAMES cppcheck)
-if (CMAKE_C_CPPCHECK)
+find_program(CPPCHECK NAMES cppcheck)
+if (NOT CPPCHECK STREQUAL "CPPCHECK-NOTFOUND")
+    set(CMAKE_C_CPPCHECK, "${CPPCHECK}")
     list(
-        APPEND CMAKE_C_CPPCHECK 
-            "--enable=performance,portability,style"
+        APPEND CPPCHECK 
+            "--enable=pexirformance,portability,style"
             "--inconclusive"
             "--force" 
             "--inline-suppr"
             "--suppress=*:unity/*"
     )
+else()
+    message(WARNING "Could NOT find cppcheck (${CPPCHECK})")
 endif()
 
+# Project-wide constants
+set(include_dest "include/${CMAKE_PROJECT_NAME}-${PROJECT_VERSION}")
+set(main_lib_dest "lib/${CMAKE_PROJECT_NAME}-${PROJECT_VERSION}")
+set(lib_dest "${main_lib_dest}/${CMAKE_BUILD_TYPE}")
+
+# Project file structure
 add_subdirectory(lib)
 add_subdirectory(src)
 
+# Testing file structure
 include(CTest)
 add_subdirectory(unity) 
 add_subdirectory(test) 
 
-set(CMAKE_C_FLAGS_DEBUG "-std=c11 -Wall -Wextra -Og -g")
-set(CMAKE_C_FLAGS_RELEASE "-std=c11 -Wall -Wextra -O3")
+# Warning flags
+if (MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
 
 # add a target to generate API documentation with Doxygen
 option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
@@ -45,10 +60,9 @@ if(BUILD_DOCUMENTATION)
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
-
 endif()
 
-# install target in src/CMakeLists for <3.12 compatibility - OMITTED
+# Installing targets
 
 include(InstallRequiredSystemLibraries)
 set(CPACK_PROJECT_NAME ${CMAKE_PROJECT_NAME})
