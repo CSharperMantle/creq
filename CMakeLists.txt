@@ -4,8 +4,8 @@ project(creq
     LANGUAGES C 
     DESCRIPTION "An elegant way to generate HTTP/1.x messages in C")
 
+# Compile environment dependencies
 find_package(Doxygen)
-
 find_program(CPPCHECK NAMES cppcheck)
 if (NOT CPPCHECK STREQUAL "CPPCHECK-NOTFOUND")
     set(CMAKE_C_CPPCHECK, "${CPPCHECK}")
@@ -21,15 +21,25 @@ else()
     message(WARNING "Could NOT find cppcheck (${CPPCHECK})")
 endif()
 
+# Project-wide constants
+set(include_dest "include/${CMAKE_PROJECT_NAME}-${PROJECT_VERSION}")
+set(main_lib_dest "lib/${CMAKE_PROJECT_NAME}-${PROJECT_VERSION}")
+
+# Project file structure
 add_subdirectory(lib)
 add_subdirectory(src)
 
+# Testing file structure
 include(CTest)
 add_subdirectory(unity) 
 add_subdirectory(test) 
 
-set(CMAKE_C_FLAGS_DEBUG "-Wall -Wextra -Og -g")
-set(CMAKE_C_FLAGS_RELEASE "-Wall -Wextra -O3")
+# Warning flags
+if (MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
 
 # add a target to generate API documentation with Doxygen
 option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
@@ -50,6 +60,8 @@ if(BUILD_DOCUMENTATION)
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
 endif()
+
+# Installing targets
 
 include(InstallRequiredSystemLibraries)
 set(CPACK_PROJECT_NAME ${CMAKE_PROJECT_NAME})

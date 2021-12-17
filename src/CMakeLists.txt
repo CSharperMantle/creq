@@ -7,7 +7,6 @@ set(src_headers
 )
 
 set(lib_headers
-    creq.h
     ${PROJECT_SOURCE_DIR}/lib/c-vector/cvector.h
 )
 
@@ -19,5 +18,5 @@ target_compile_features(creq PUBLIC c_std_11)
 target_include_directories(creq PUBLIC ${src_header_path} ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(creq c_vector)
 
-install(TARGETS creq DESTINATION lib)
-install(FILES ${lib_headers} DESTINATION include)
+install(TARGETS creq DESTINATION "${main_lib_dest}")
+install(FILES ${src_headers} ${lib_headers} DESTINATION "${include_dest}")
