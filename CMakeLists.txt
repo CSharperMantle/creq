@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 project(creq
-    VERSION 0.1.6.3
+    VERSION 0.2.0.0
     LANGUAGES C 
     DESCRIPTION "An elegant way to generate HTTP/1.x messages in C")
 
