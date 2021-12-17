@@ -9,7 +9,9 @@ set(src_lib_headers
 
 include_directories("${PROJECT_SOURCE_DIR}/lib/c-vector")
 
+# Target: CREQ core library
 add_library(creq STATIC ${src_lib_files})
+target_compile_features(creq PUBLIC c_std_11)
 target_link_libraries(creq c_vector)
 
 install(TARGETS creq DESTINATION lib)

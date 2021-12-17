@@ -5,16 +5,20 @@ project(creq
     DESCRIPTION "An elegant way to generate HTTP/1.x messages in C")
 
 find_package(Doxygen)
-find_program(CMAKE_C_CPPCHECK NAMES cppcheck)
-if (CMAKE_C_CPPCHECK)
+
+find_program(CPPCHECK NAMES cppcheck)
+if (NOT CPPCHECK STREQUAL "CPPCHECK-NOTFOUND")
+    set(CMAKE_C_CPPCHECK, "${CPPCHECK}")
     list(
-        APPEND CMAKE_C_CPPCHECK 
-            "--enable=performance,portability,style"
+        APPEND CPPCHECK 
+            "--enable=pexirformance,portability,style"
             "--inconclusive"
             "--force" 
             "--inline-suppr"
             "--suppress=*:unity/*"
     )
+else()
+    message(WARNING "Could NOT find cppcheck (${CPPCHECK})")
 endif()
 
 add_subdirectory(lib)
@@ -24,8 +28,8 @@ include(CTest)
 add_subdirectory(unity) 
 add_subdirectory(test) 
 
-set(CMAKE_C_FLAGS_DEBUG "-std=c11 -Wall -Wextra -Og -g")
-set(CMAKE_C_FLAGS_RELEASE "-std=c11 -Wall -Wextra -O3")
+set(CMAKE_C_FLAGS_DEBUG "-Wall -Wextra -Og -g")
+set(CMAKE_C_FLAGS_RELEASE "-Wall -Wextra -O3")
 
 # add a target to generate API documentation with Doxygen
 option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
@@ -45,10 +49,7 @@ if(BUILD_DOCUMENTATION)
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
-
 endif()
-
-# install target in src/CMakeLists for <3.12 compatibility - OMITTED
 
 include(InstallRequiredSystemLibraries)
 set(CPACK_PROJECT_NAME ${CMAKE_PROJECT_NAME})
